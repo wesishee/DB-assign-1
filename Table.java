@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * @file  Table.java
  *
@@ -171,18 +170,34 @@ public class Table
      * #usage movie.minus (show)
      * @param table2  the rhs table in the minus operation
      * @return  the table representing the difference (this - table2)
+     * @author  Kim Bradley
      */
     public Table minus (Table table2)
     {
-        out.println ("RA> " + name + ".minus (" + table2.name + ")");
-
-        Table result = new Table (name + count++, attribute, domain, key);
-
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
-        return result;
+      out.println ("RA> " + name + ".minus (" + table2.name + ")");
+      
+      Table result = new Table (name + count++, attribute, domain, key);
+      
+      boolean match = false;
+      // iterate through this table
+      for (int i=0; i < tuples.size(); i++) {
+        // iterate through table2
+        for (int j=0; j < table2.tuples.size(); j++) {
+          // if tuple in this table matches one in table2
+          if (tuples.get(i) == table2.tuples.get(j)) {
+            match = true;
+            break;
+          }
+        }
+        // if tuple in this table has no match in table2
+        if (!match) {
+          // add tuple to result table
+          result.insert(tuples.get(i));
+        }
+        else match = false;
+      }
+      
+      return result;
     } // minus
 
     /***************************************************************************
@@ -284,14 +299,22 @@ public class Table
      * have the same number of attributes each with the same corresponding domain.
      * @param table2  the rhs table
      * @return  whether the two tables are compatible
+     * @author  Kim Bradley
      */
     private boolean compatible (Table table2)
     {
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
-        return false;
+      int i = 0;
+      // if this table and table2 have same number of attributes
+      if (attribute.length == table2.attribute.length) {
+        // iterate through domains
+        for(int j=0; j < domain.length; j++) {
+          // if this table and table2 dont have corresponding domains
+          if (!(domain[j] == table2.domain[j])) return false;
+        }
+        return true;
+      }
+      
+      return false;
     } // compatible
 
     /***************************************************************************
@@ -465,14 +488,23 @@ public class Table
      * @param dom  the domains (attribute types)
      * @return  whether the tuple has the right size and values that comply
      *          with the given domains
+     * @author  Kim Bradley
      */
     private static boolean typeCheck (Comparable [] tup, Class [] dom)
-    { 
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
-        return true;
+    {
+      int i = 0;
+      
+      // if tuple doesnt have same size as domain
+      if (tup.length != dom.length) return false;
+      
+      // iterate through tuple
+      for (Comparable t : tup) {
+        // if tuple value type matches dom type
+        if (t.getClass() == dom[i]) i++;
+        else return false;
+      }
+      
+      return true;
     } // typeCheck
 
     /***************************************************************************
