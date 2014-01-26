@@ -111,7 +111,23 @@ public class Table
         String [] pAttribute = attributeList.split (" ");
         int []    colPos     = match (pAttribute);
         Class []  colDomain  = extractDom (domain, colPos);
-        String [] newKey     = null;    // FIX: original key if included, otherwise all atributes
+        String [] newKey     = null;// FIX: original key if included, otherwise all atributes(FIXED by James and Eddie)
+        int count = 0;
+        for(int i = 0; i < key.length; i++){
+        	for(int k = 0; k< pAttribute.length; k++){
+        		if(key[i].equalsIgnoreCase(pAttribute[k])){
+        			count++;
+        		}
+        	}
+        }
+        
+        if(count == key.length){
+        	newKey = key;
+        }
+        else{
+        	newKey = pAttribute;
+        }
+        
         Table     result     = new Table (name + count++, pAttribute, colDomain, newKey);
 
         for (Comparable [] tup : tuples) {
