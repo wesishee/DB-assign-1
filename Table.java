@@ -273,15 +273,40 @@ public class Table
     public boolean insert (Comparable [] tup)
     {
         out.println ("DML> insert into " + name + " values ( " + Arrays.toString (tup) + " )");
-
+        
+        //if float is in domain
+        int floatInd = 0;
+        boolean floatin = false;
+        for(Class iClass : domain){
+        	try {
+				if(iClass.equals(Class.forName ("java.lang.Float"))){
+					out.println("283 Floatin");
+					domain[floatInd] = Class.forName ("java.lang.Double");
+					break;
+				}
+				else{
+					floatInd++;
+				}
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        
         if (typeCheck (tup, domain)) {
             tuples.add (tup);
+            
             Comparable [] keyVal = new Comparable [key.length];
+            
             int []        cols   = match (key);
-            for (int j = 0; j < keyVal.length; j++) keyVal [j] = tup [cols [j]];
+            
+            for (int j = 0; j < keyVal.length; j++){ 
+            	keyVal [j] = tup [cols [j]];
+            }         
             index.put (new KeyType (keyVal), tup);
             return true;
         } else {
+        	System.out.println("False");
             return false;
         } // if
     } // insert
@@ -532,13 +557,22 @@ public class Table
       int i = 0;
       
       // if tuple doesnt have same size as domain
-      if (tup.length != dom.length) return false;
+      if (tup.length != dom.length){
+    	  System.out.println("length false");
+    	  return false;
+      }
       
       // iterate through tuple
       for (Comparable t : tup) {
         // if tuple value type matches dom type
-        if (t.getClass() == dom[i]) i++;
-        else return false;
+        if (t.getClass().equals(dom[i])){
+        	
+        	i++;
+        }
+        else{
+        	System.out.println("match false");
+        	return false;
+        }
       }
       
       return true;
@@ -587,35 +621,84 @@ public class Table
      */
     private static String [] infix2postfix (String condition)
     {
-        if (condition == null || condition.trim () == "") return null;
-        String [] infix   = condition.split (" ");        // tokenize the infix
-        String [] postfix = new String [infix.length];    // same size, since no ( ) 
+    	if (condition == null || condition.trim () == "") return null;
         
-        Stack<String> finalStack = new Stack<String>();
-        Stack<String> operatorStack = new Stack<String>();
-             
-        for(int i = 0; i < infix.length; i++){
-        	if(infix[i].equalsIgnoreCase("&") || infix[i].equalsIgnoreCase("||")){
-        		finalStack.push(operatorStack.pop());
-        		operatorStack.push(infix[i]);
+    	String [] infix   = condition.split (" ");  // tokenize the infix
+        for(int x = 0; x<infix.length;++x){
+        	String temp = infix[x];
+        	if(temp.charAt(0) == '\'' && temp.charAt(temp.length()-1) == '\'' ){
+        		temp = temp.substring(1, temp.length()-1);
+        		out.println(temp);
+        		infix[x]=temp;
         	}
-        	else if(infix[i].equalsIgnoreCase("==") || infix[i].equalsIgnoreCase("!=") || infix[i].equalsIgnoreCase("<=") || infix[i].equalsIgnoreCase(">=") || infix[i].equalsIgnoreCase("<") || infix[i].equalsIgnoreCase(">")){
-        		operatorStack.push(infix[i]);
+        }
+        
+        String [] postfix = new String [infix.length];    // same size, since no ( ) 
+        String [] expWaitList = new String[infix.length];
+        boolean prevExp = false;
+        int insertPoint =0;
+        int wait =0;
+        for(int x=0;x<postfix.length;++x){
+        	//System.out.println("looking at "+infix[x]);
+        	if(!isComparison(infix[x])&&(!infix[x].equals("&")&&!infix[x].equals("||")&&!infix[x].equals("-"))){
+        		//System.out.println("is string");
+        		postfix[insertPoint]=infix[x];
+        		//System.out.println("adding this to list " + infix[x]);
+        		++insertPoint;
+        		if(prevExp==false){
+        			//System.out.println("switch");
+        			prevExp=true;
+        		}
+        		else if(prevExp==true && wait>0){
+        			//System.out.println("here");
+        			prevExp=false;
+        			//System.out.println(expWaitList[wait-1]);
+        			while(wait>0){
+        				postfix[insertPoint] = expWaitList[wait-1]; 
+        				++insertPoint;
+        				--wait;
+        			}
+        		}
+        			
+        		else if(prevExp==true && wait!=0){
+        			postfix[insertPoint]=infix[x];
+        			++insertPoint;
+        			postfix[insertPoint]=expWaitList[wait];
+        			--wait;
+        			//System.out.println("Wait is: "+wait);
+        		}
+        		else{
+        			//System.out.println("Invalid infix expression");
+        		}
+        	}
+        	else if(isComparison(infix[x])){
+        		System.out.println("is comparison");
+        		if(prevExp == false){
+        			//System.out.println("Invalid infix expression");
+        		}
+        	
+        		else{
+        			expWaitList[wait]=infix[x];
+        			++wait;
+        		}
         	}
         	else{
-        		finalStack.push(infix[i]);
-        	}		
+        		//System.out.println("not string or comparison");
+        		if(prevExp==true){
+        		//	System.out.println("Invalid infix expression");
+        		}
+        		else{
+        			expWaitList[wait]=infix[x];
+        			++wait;
+        		}
+        	}
         }
-        while(!operatorStack.empty()){
-        	finalStack.push(operatorStack.pop());
-        }
-        
-        for(int i = 0; i < infix.length; i++){
-        	postfix[i] = finalStack.elementAt(i);
-        }
-        for(int i = 0; i < postfix.length; i++){
-        	System.out.println(postfix[i]);
-        }
+        //quick fix failed
+       // while(insertPoint<postfix.length&wait>0){
+        //	postfix[insertPoint]=expWaitList[wait-1];
+        	//++insertPoint;
+        	//--wait;
+       // }
         return postfix;
     } // infix2postfix
 

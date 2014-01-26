@@ -112,6 +112,11 @@ class MovieDB
         
         out.println(movie.evalTup(array, film0));
         
+        
+        Comparable [] exec1 = { 9999, "S_Spielberg", "Hollywood", 10000.00 };
+        out.println ();
+        movieExec.insert (exec1);
+        movieExec.print ();
     } // main
 
 } // MovieDB class
