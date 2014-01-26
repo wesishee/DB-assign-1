@@ -107,7 +107,7 @@ public class Table
     public Table project (String attributeList)
     {
         out.println ("RA> " + name + ".project (" + attributeList + ")");
-
+        
         String [] pAttribute = attributeList.split (" ");
         int []    colPos     = match (pAttribute);
         Class []  colDomain  = extractDom (domain, colPos);
@@ -418,48 +418,56 @@ public class Table
      * @return  whether to keep the tuple
      */
     @SuppressWarnings("unchecked")
+    
     public boolean evalTup (String [] postfix, Comparable [] tup)
     {
-        if (postfix == null) return true;
+    	
+    	if (postfix == null) return true;
         Stack <Comparable <?>> s = new Stack <> ();
         
         for (String token : postfix) {
-                //is & or || - evaluate top 2 on the stack 
-                if(token == "&" ||token == "||"){
-                        if(token == "&"){
-                                
-                                Comparable clause1 = s.pop();
-                                Comparable clause2 = s.pop();
-                                
-                                Boolean truthVal = (clause1.compareTo(true) == 0 && clause2.compareTo(true) == 0);
-                                s.push(truthVal);
-                                
-                        }
-                        else{
-                                Comparable clause1 = s.pop();
-                                Comparable clause2 = s.pop();
-                                
-                                Boolean truthVal = clause1.compareTo(true) == 0 || clause2.compareTo(true) == 0;
-                                s.push(truthVal);
-                        
-                        }
-                }
-                //is comparison - evaluate then push boolean
-                else if(isComparison(token)){
-                        Comparable right = s.pop();
-                        Comparable left = s.pop();
-                        Boolean truthVal = compare(left, token, right);
-                        s.push(truthVal);
-                }
-                //is operand - push if attribute, push val in tuple, else push
-                else{
-                        if(Arrays.asList(this.attribute).contains(token))
-                                s.push(tup[this.columnPos(token)].toString());
-                        else
-                                s.push(token);
-                }
-        } // for
+            //is & or || - evaluate top 2 on the stack 
+        	if(token.equalsIgnoreCase("&") ||token.equals("||")){
+                    if(token.equalsIgnoreCase("&")){
+                            
+                    	Comparable clause1 = s.pop();
+                        Comparable clause2 = s.pop();
 
+                        Boolean truthVal = (clause1.compareTo(true) == 0 && clause2.compareTo(true) == 0);
+                        s.push(truthVal);
+           
+                    
+                    }
+                    else{
+                    	Comparable clause1 = s.pop();
+                    	System.out.println("Push 444 -> " + clause1);
+                        Comparable clause2 = s.pop();
+                        System.out.println("Push 444 -> " + clause2);
+                        
+                        Boolean truthVal = (clause1.compareTo(true) == 0 || clause2.compareTo(true) == 0);
+                        s.push(truthVal);
+                    }
+                }
+            //is comparison - evaluate then push boolean
+            else if(isComparison(token)){
+                    Comparable right = s.pop();
+                    Comparable left = s.pop();
+                   
+                    Boolean truthVal = compare(left, token, right);
+                    s.push(truthVal);
+        
+            }
+            //is operand - push if attribute, push val in tuple, else push
+            else{
+                if(Arrays.asList(this.attribute).contains(token)){
+                     s.push(tup[this.columnPos(token)].toString());
+                }
+                else{
+                	 s.push(token);
+                }           
+            }
+        } // for
+        System.out.println();
         return (Boolean) s.pop ();         
     } // evalTup
 

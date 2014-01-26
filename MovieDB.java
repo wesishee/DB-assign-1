@@ -91,12 +91,41 @@ class MovieDB
         Table t_project = movie.project ("title year");
         t_project.print ();
 
+        out.println("SELECT----------------SELECT------------------SELECT---------------SELECT------------SELECT--------------------\n");
         out.println ();
-        Table t_select = movie.select ("title == 'Star_Wars'");
+        Table t_select = movie.select ("title == Star_Wars & year > 1955");
         t_select.print ();
 
+
+        out.println("UNION----------------UNION------------------UNION---------------UNION------------UNION--------------------\n");
         out.println ();
+        
+        
         Table t_union = movie.union (cinema);
+        //Table U
+        Table unionTest1 = new Table ("movieExec", "certNo name address fee",
+                "Integer String String Float", "certNo");
+        Table unionTest2 = new Table ("movieExec", "certNo name address fee",
+                "Integer String String Float", "certNo");
+        
+        Comparable [] exec10 = { 9999, "S_Spielberg", "Hollywood", 10000.00 };
+        Comparable [] exec1 = { 9997, "S_Patel", "Bollywood", 1000.00 };
+        Comparable [] exec2 = { 9998, "M_Scorcese", "Atlanta", 50000.00 };
+        
+        Comparable [] exec3 = { 10000, "W_Disney", "Orlando", 1.00 };
+        Comparable [] exec4 = { 99995, "Fuck", "JAX", 10000.50 };
+        Comparable [] exec5 = { 9899, "Shit", "NYC", 10000.70 };
+        
+        unionTest1.insert(exec10);
+        unionTest1.insert(exec1);
+        unionTest1.insert(exec2);
+        unionTest2.insert(exec3);
+        unionTest2.insert(exec4);
+        unionTest2.insert(exec5);
+        
+        Table unionTestResult = unionTest1.union(unionTest2);
+        unionTestResult.print();
+        
         t_union.print ();
 
         out.println ();
@@ -110,13 +139,10 @@ class MovieDB
         out.println("----------------TEST------------------TEST---------------TEST------------TEST--------------------\n");
         String [] array = {"1970", "year", "<", "year", "1990", "<", "&"};
         
-        out.println(movie.evalTup(array, film0));
+        //UnionTest1 = new Table{
+        //}
         
         
-        Comparable [] exec1 = { 9999, "S_Spielberg", "Hollywood", 10000.00 };
-        out.println ();
-        movieExec.insert (exec1);
-        movieExec.print ();
     } // main
 
 } // MovieDB class
