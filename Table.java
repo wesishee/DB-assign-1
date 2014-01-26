@@ -134,8 +134,8 @@ public class Table
     {
         out.println ("RA> " + name + ".select (" + condition + ")");
 
-        String [] postfix = { "title", "Star_Wars", "==" };      // FIX: delete after impl
-//      String [] postfix = infix2postfix (condition);           // FIX: uncomment after impl
+        //String [] postfix = { "title", "Star_Wars", "==" };      // FIX: delete after impl
+        String [] postfix = infix2postfix (condition);           // FIX: uncomment after impl
         Table     result  = new Table (name + count++, attribute, domain, key);
 
         for (Comparable [] tup : tuples) {
@@ -150,16 +150,37 @@ public class Table
      * #usage movie.union (show)
      * @param table2  the rhs table in the union operation
      * @return  the table representing the union (this U table2)
+     * @author Edward Killmeier
      */
     public Table union (Table table2)
     {
         out.println ("RA> " + name + ".union (" + table2.name + ")");
 
         Table result = new Table (name + count++, attribute, domain, key);
-
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
+          //Check if tables are the same	
+          if(this.compatible(table2)){
+        	  //Add all the tuples from this table to result table
+        	  for(Comparable [] tup : tuples){
+        		  result.insert(tup);
+        	  }
+        	  //Check to see if there are matching tuples, if there are
+        	  //then don't add, if there is no match then add the tuple.
+        	  for(int i = 0; i < table2.tuples.size(); i++){
+        		  boolean check = false;
+        		  for(int k = 0; k < tuples.size(); k++){
+        			  if(table2.tuples.get(i).equals(tuples.get(k))){
+        				  check = true;
+        			  }
+        		  }
+        		  if(!check){
+        			  result.insert(table2.tuples.get(i));
+        		  }
+        	  }
+          }
+          //If tables are not compatible.
+          else{
+        	  out.println("Tables are not compatible");
+          }
 
         return result;
     } // union
@@ -362,40 +383,40 @@ public class Table
         Stack <Comparable <?>> s = new Stack <> ();
         
         for (String token : postfix) {
-        	//is & or || - evaluate top 2 on the stack 
-        	if(token == "&" ||token == "||"){
-        		if(token == "&"){
-        			
-        			Comparable clause1 = s.pop();
-        			Comparable clause2 = s.pop();
-        			
-        			Boolean truthVal = (clause1.compareTo(true) == 0 && clause2.compareTo(true) == 0);
-        			s.push(truthVal);
-        			
-        		}
-        		else{
-        			Comparable clause1 = s.pop();
-        			Comparable clause2 = s.pop();
-        			
-        			Boolean truthVal = clause1.compareTo(true) == 0 || clause2.compareTo(true) == 0;
-        			s.push(truthVal);
-        		
-        		}
-        	}
-        	//is comparison - evaluate then push boolean
-        	else if(isComparison(token)){
-        		Comparable right = s.pop();
-        		Comparable left = s.pop();
-        		Boolean truthVal = compare(left, token, right);
-        		s.push(truthVal);
-        	}
-        	//is operand - push if attribute, push val in tuple, else push
-        	else{
-        		if(Arrays.asList(this.attribute).contains(token))
-        			s.push(tup[this.columnPos(token)].toString());
-        		else
-        			s.push(token);
-        	}
+                //is & or || - evaluate top 2 on the stack 
+                if(token == "&" ||token == "||"){
+                        if(token == "&"){
+                                
+                                Comparable clause1 = s.pop();
+                                Comparable clause2 = s.pop();
+                                
+                                Boolean truthVal = (clause1.compareTo(true) == 0 && clause2.compareTo(true) == 0);
+                                s.push(truthVal);
+                                
+                        }
+                        else{
+                                Comparable clause1 = s.pop();
+                                Comparable clause2 = s.pop();
+                                
+                                Boolean truthVal = clause1.compareTo(true) == 0 || clause2.compareTo(true) == 0;
+                                s.push(truthVal);
+                        
+                        }
+                }
+                //is comparison - evaluate then push boolean
+                else if(isComparison(token)){
+                        Comparable right = s.pop();
+                        Comparable left = s.pop();
+                        Boolean truthVal = compare(left, token, right);
+                        s.push(truthVal);
+                }
+                //is operand - push if attribute, push val in tuple, else push
+                else{
+                        if(Arrays.asList(this.attribute).contains(token))
+                                s.push(tup[this.columnPos(token)].toString());
+                        else
+                                s.push(token);
+                }
         } // for
 
         return (Boolean) s.pop ();         
@@ -546,17 +567,39 @@ public class Table
      * Ex: "1979 < year & year < 1990" --> { "1979", "year", "<", "year", "1990", "<", "&" } 
      * @param condition  the untokenized infix condition
      * @return  resultant tokenized postfix expression
+     * @author Edward Killmeier
      */
     private static String [] infix2postfix (String condition)
     {
         if (condition == null || condition.trim () == "") return null;
         String [] infix   = condition.split (" ");        // tokenize the infix
         String [] postfix = new String [infix.length];    // same size, since no ( ) 
-
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
+        
+        Stack<String> finalStack = new Stack<String>();
+        Stack<String> operatorStack = new Stack<String>();
+             
+        for(int i = 0; i < infix.length; i++){
+        	if(infix[i].equalsIgnoreCase("&") || infix[i].equalsIgnoreCase("||")){
+        		finalStack.push(operatorStack.pop());
+        		operatorStack.push(infix[i]);
+        	}
+        	else if(infix[i].equalsIgnoreCase("==") || infix[i].equalsIgnoreCase("!=") || infix[i].equalsIgnoreCase("<=") || infix[i].equalsIgnoreCase(">=") || infix[i].equalsIgnoreCase("<") || infix[i].equalsIgnoreCase(">")){
+        		operatorStack.push(infix[i]);
+        	}
+        	else{
+        		finalStack.push(infix[i]);
+        	}		
+        }
+        while(!operatorStack.empty()){
+        	finalStack.push(operatorStack.pop());
+        }
+        
+        for(int i = 0; i < infix.length; i++){
+        	postfix[i] = finalStack.elementAt(i);
+        }
+        for(int i = 0; i < postfix.length; i++){
+        	System.out.println(postfix[i]);
+        }
         return postfix;
     } // infix2postfix
 
@@ -605,17 +648,16 @@ public class Table
      */
     private static Comparable [] extractTup (Comparable [] group, int [] colPos)
     {
-    	
-    	Comparable [] tup = new Comparable [colPos.length];
+            
+            Comparable [] tup = new Comparable [colPos.length];
         
-    	int i = 0;
-    	for(int col : colPos){
-    		tup[i] = group[col];
-    		i++;
-    	}
+            int i = 0;
+            for(int col : colPos){
+                    tup[i] = group[col];
+                    i++;
+            }
    
         return tup;
     } // extractTup
 
 } // Table class
-
