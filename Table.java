@@ -625,7 +625,7 @@ public class Table
      * Ex: "1979 < year & year < 1990" --> { "1979", "year", "<", "year", "1990", "<", "&" } 
      * @param condition  the untokenized infix condition
      * @return  resultant tokenized postfix expression
-     * @author Edward Killmeier
+     * @author Chris Klappich
      */
     private static String [] infix2postfix (String condition)
     {
