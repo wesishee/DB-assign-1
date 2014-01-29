@@ -426,8 +426,8 @@ public class Table
         Stack <Comparable <?>> s = new Stack <> ();
         
         for (String token : postfix) {
-            //is & or || - evaluate top 2 on the stack 
-        	if(token.equalsIgnoreCase("&") ||token.equals("||")){
+            //is & or | - evaluate top 2 on the stack 
+        	if(token.equalsIgnoreCase("&") |token.equals("|")){
                     if(token.equalsIgnoreCase("&")){
                             
                     	Comparable clause1 = s.pop();
@@ -444,7 +444,7 @@ public class Table
                         Comparable clause2 = s.pop();
                         System.out.println("Push 444 -> " + clause2);
                         
-                        Boolean truthVal = (clause1.compareTo(true) == 0 || clause2.compareTo(true) == 0);
+                        Boolean truthVal = (clause1.compareTo(true) == 0 | clause2.compareTo(true) == 0);
                         s.push(truthVal);
                     }
                 }
@@ -593,9 +593,9 @@ public class Table
      */
     private static boolean isComparison (String op)
     {
-        return op.equals ("==") || op.equals ("!=") ||
-               op.equals ("<")  || op.equals ("<=") ||
-               op.equals (">")  || op.equals (">=");
+        return op.equals ("==") | op.equals ("!=") |
+               op.equals ("<")  | op.equals ("<=") |
+               op.equals (">")  | op.equals (">=");
     } // isComparison
 
     /***************************************************************************
@@ -629,7 +629,7 @@ public class Table
      */
     private static String [] infix2postfix (String condition)
     {
-    	if (condition == null || condition.trim () == "") return null;
+    	if (condition == null | condition.trim () == "") return null;
         
     	String [] infix   = condition.split (" ");  // tokenize the infix
         for(int x = 0; x<infix.length;++x){
@@ -648,7 +648,7 @@ public class Table
         int wait =0;
         for(int x=0;x<postfix.length;++x){
         	//System.out.println("looking at "+infix[x]);
-        	if(!isComparison(infix[x])&&(!infix[x].equals("&")&&!infix[x].equals("||")&&!infix[x].equals("-"))){
+        	if(!isComparison(infix[x])&&(!infix[x].equals("&")&&!infix[x].equals("|")&&!infix[x].equals("-"))){
         		//System.out.println("is string");
         		postfix[insertPoint]=infix[x];
         		//System.out.println("adding this to list " + infix[x]);
