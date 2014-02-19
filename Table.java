@@ -5,11 +5,14 @@
  */
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 
 import static java.lang.Boolean.*;
 import static java.lang.System.out;
 
 import java.util.*;
+
+//import org.apache.commons.lang.ArrayUtils;
 
 /*******************************************************************************
  * This class implements relational database tables (including attribute names,
@@ -111,7 +114,7 @@ public class Table
         String [] pAttribute = attributeList.split (" ");
         int []    colPos     = match (pAttribute);
         Class []  colDomain  = extractDom (domain, colPos);
-        String [] newKey     = null;// FIX: original key if included, otherwise all atributes(FIXED by James and Eddie)
+        String [] newKey     = null;// FIX: original key if included, otherwise all attributes(FIXED by James and Eddie); wes: after note, a primary key must not be null if primary key is being used in this table
         int count = 0;
         for(int i = 0; i < key.length; i++){
         	for(int k = 0; k< pAttribute.length; k++){
@@ -129,8 +132,8 @@ public class Table
         }
         
         Table     result     = new Table (name + count++, pAttribute, colDomain, newKey);
-
-        for (Comparable [] tup : tuples) {
+         
+        for (Comparable [] tup : tuples) { // for each tuple in tuples[], do:
             result.tuples.add (extractTup (tup, colPos));
         } // for
 
@@ -154,8 +157,10 @@ public class Table
         String [] postfix = infix2postfix (condition);           // FIX: uncomment after impl
         Table     result  = new Table (name + count++, attribute, domain, key);
 
-        for (Comparable [] tup : tuples) {
-            if (result.evalTup (postfix, tup)) result.tuples.add (tup);
+        for (Comparable[] tup : tuples) { // for each tuple in tuples[], do:
+            if (result.evalTup (postfix, tup)){
+            	result.tuples.add (tup);
+            }
         } // for
 
         return result;
@@ -250,18 +255,180 @@ public class Table
      * @param condition  the join condition for tuples
      * @param table2     the rhs table in the join operation
      * @return  the table representing the join (this |><| table2)
+     * @author Wes Ishee
      */
     public Table join (String condition, Table table2)
     {
-        out.println ("RA> " + name + ".join (" + condition + ", " + table2.name + ")");
+        out.println ("RA> " + this.name + ".join (" + condition + ", " + table2.name + ")");
+        
+        int t1_colNo=0; // column to join on in this.table
+        int t2_colNo=0; // column to join on in table2
+        String[] comparison = condition.split(" "); // splits the condition into an array
+        
+        for(int j=0; j<attribute.length; j++){ // finds the column # in this.table to join on
+        	if(comparison[0].equals(attribute[j])){
+        		t1_colNo = j;
+        		break;
+        	}
+        }
+        for(int j=0; j<table2.attribute.length; j++){ // finds the column # in table2 to join on
+        	if(comparison[2].equals(table2.attribute[j])){
+        		t2_colNo = j;
+        		break;
+        	}
+        }
+        
+        String[] attr = new String[attribute.length + table2.attribute.length];
+        int a=0;
+        while(a<attr.length){ // creates an attribute array with all attributes from this.table and table2
+        	if(a<attribute.length){
+        		attr[a] = attribute[a]; // add in attribute from this.table
+        	}else{
+        		for(int i=0; i<a; i++){
+        			if(attr[a-1].equals(attr[i])){ // checks for duplicate column names between tables and changes the second table to "<table_name>.<column_name>"
+        				String prefix = table2.getName();//.substring(0, 1);
+        				prefix += "_";
+        				attr[a] = prefix + table2.attribute[a-attribute.length]; // add in attribute from table2.attribute
+        				break;
+        			}
+        		}
+        	}
+        	a++;
+        }
+        a=0;
+        Class[] dom = new Class[domain.length + table2.domain.length];
+        while(a<dom.length){ // creates a domain array with all domains from this.table and table2
+        	if(a<domain.length){
+        		dom[a] = domain[a];
+        	}else{
+        		dom[a] = table2.domain[a-domain.length];
+        	}
+        	a++;
+        }
+        
+        for(int i=0; i<attribute.length; i++){
+        	if(comparison[2].equals(attribute[i])){ // updating conditional statement with new column name
+        		String prefix = table2.getName();//.substring(0, 1);
+				prefix += "_";
+        		comparison[2] = prefix + attribute[i];
+        		break;
+			}
+        }
+        
+        
+        Table crossProd = new Table (name + count++, attr, dom, key);  // uses created attribute and domain arrays to create a new table with the proper column names and types
+        
 
-        Table result = new Table (name + count++, new String [0], new Class [0], key);
+        
+        switch(comparison[1]){ // switch case for condition of join
+        	case "==":
+        		// populating crossProd.  filling with only tuples where keys are equal
+                for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.attribute.length; j++){
+                		if(tuples.get(i)[t1_colNo].equals(table2.tuples.get(j)[t2_colNo])){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.tuples.size(); k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        	case ">":
+        		for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.tuples.size(); j++){
+                		if(tuples.get(i)[t1_colNo].compareTo(table2.tuples.get(j)[t2_colNo]) < 0){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.attribute.length; k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        	case "<":
+        		for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.tuples.size(); j++){
+                		if(tuples.get(i)[t1_colNo].compareTo(table2.tuples.get(j)[t2_colNo]) < 0){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.attribute.length; k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        	case ">=":
+        		for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.tuples.size(); j++){
+                		if(tuples.get(i)[t1_colNo].compareTo(table2.tuples.get(j)[t2_colNo]) >= 0){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.attribute.length; k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        	case "<=":
+        		for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.tuples.size(); j++){
+                		if(tuples.get(i)[t1_colNo].compareTo(table2.tuples.get(j)[t2_colNo]) <= 0){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.attribute.length; k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        }
+        
+        
+        
+//      for(int i=0; i<table2.tuples.size(); i++){
+//    	List <Comparable[]> tempList = new ArrayList();
+//    	tempList.add((Comparable[]) Arrays.copyOf(table2.tuples.get(i), crossProd.tuples.size()));
+//    	Comparable[] temp = Collections.reverse(tempList);
+//    	crossProd.insert(tuples.get(i));
+//    }
+//    for(int i=0; i<tuples.size()+table2.tuples.size()-2; i++){
+//    	for(int j=0; j<table2.tuples.size(); j++){
+//    		if(tuples.get(i)[t1_colNo].equals(table2.tuples.get(j)[t2_colNo])){
+//    			List <Comparable[]> combineList = new ArrayList(Arrays.asList(tuples.get(i)));
+//            	combineList.add(table2.tuples.get(i));
+//            	Comparable[] combined = (Comparable[]) combineList.toArray();
+//    		}
+//    	}
+//    	List <Comparable[]> combineList = new ArrayList(Arrays.asList(tuples.get(i)));
+//    	combineList.add(table2.tuples.get(i));
+//    	Comparable[] combined = (Comparable[]) combineList.toArray();
+//    	//Comparable[] combined = combine(tuples.get(i),table2.tuples.get(i));
+//    	crossProd.insert(tuples.get(i));
+//    }
+//    for(int i=0; i<table2.tuples.size(); i++){
+//    	crossProd.insert(table2.tuples.get(i));
+//    }
+
+    
 
              //-----------------\\ 
             // TO BE IMPLEMENTED \\
            //---------------------\\ 
+        
+        
 
-        return result;
+        return crossProd;
     } // join
 
     /***************************************************************************
@@ -294,16 +461,23 @@ public class Table
         }
         
         if (typeCheck (tup, domain)) {
-            tuples.add (tup);
+        	Comparable [] keyVal = new Comparable [key.length];
             
-            Comparable [] keyVal = new Comparable [key.length];
-            
-            int []        cols   = match (key);
+            int [] cols = match (key);
             
             for (int j = 0; j < keyVal.length; j++){ 
             	keyVal [j] = tup [cols [j]];
-            }         
-            index.put (new KeyType (keyVal), tup);
+            }    
+            KeyType type = new KeyType(keyVal);
+            if(!(this.index.containsKey(type))){ // if there is not a duplicate, add tuple into index and tuple list
+            	index.put(type,tup);
+            	tuples.add(tup);
+            }
+//          index.put (new KeyType (keyVal), tup); // this is original code
+        	
+//          tuples.add (tup); // this is original code
+            
+            
             return true;
         } else {
         	System.out.println("False");
@@ -475,79 +649,180 @@ public class Table
      * Pack tuple tup into a record/byte-buffer (array of bytes).
      * @param tup  the array of attribute values forming the tuple
      * @return  a tuple packed into a record/byte-buffer
-     * 
+     */
     byte [] pack (Comparable [] tup)
     {
         byte [] record = new byte [tupleSize ()];
         byte [] b      = null;
-        int     s      = 0;
         int     i      = 0;
-
+        byte [] temp = new byte[0];
+        //System.out.println(tupleSize());
         for (int j = 0; j < domain.length; j++) {
+        	//ByteBuffer buffer = ByteBuffer.allocate(this.tupleSize());
+        	//System.out.println(tup[j]);
             switch (domain [j].getName ()) {
-            case "java.lang.Integer":
-                b = Conversions.int2ByteArray ((Integer) tup [j]);
-                s = 4;
-                break;
-            case "java.lang.String":
-                b = ((String) tup [j]).getBytes ();
-                s = 64;
-                break;
-
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
+            	case "java.lang.Integer":
+            		ByteBuffer buffer = ByteBuffer.allocate(4);
+            		buffer.putInt((Integer)tup[j]);
+            		b=buffer.array();
+            		//System.out.println(b.length);
+            		break;
+            	case "java.lang.String":
+            		byte [] tempArray = new byte [64];
+            		b = ((String) tup [j]).getBytes();
+            		ByteBuffer buffer1 = ByteBuffer.allocate(4);
+            		buffer1.putInt(b.length);
+            		//System.out.println("here: "+buffer1.getInt(0));
+            		byte [] t = buffer1.array();
+//            		for(int x=0;x<t.length;++x){
+//            			System.out.println(t[x]);
+//            		}
+            		//System.out.println("String size: " +b.length);
+            		int f=0;
+            		for(int x=4; x>0;--x){
+            			tempArray[64-x] = t[f];
+            			++f;
+            			//System.out.println("in loop: "+t[f]);
+            		}
+            		for(int y=0;y<b.length;++y){
+            			tempArray[y]=b[y];
+            		}
+            		b=tempArray;
+            		//System.out.println("Final length: "+b.length);
+            		break;
+            	case "java.lang.Short":
+            		ByteBuffer buffer2 = ByteBuffer.allocate(2);
+            		buffer2.putShort((Short)tup[j]);
+            		b=buffer2.array();
+            		break;
+            	case "java.lang.Float":
+            		ByteBuffer buffer3 = ByteBuffer.allocate(4);
+            		Double doub = (Double)tup[j];
+            		float fl = doub.floatValue();
+            		System.out.println(fl);
+            		buffer3.putFloat(fl);
+            		b=buffer3.array();
+            		break;
+            	case "java.lang.Double":
+            		ByteBuffer buffer4 = ByteBuffer.allocate(8);
+            		buffer4.putDouble((Double)tup[j]);
+            		b=buffer4.array();
+            		break;
+            	case "java.lang.Long":
+            		ByteBuffer buffer5 = ByteBuffer.allocate(8);
+            		buffer5.putLong((Long)tup[j]);
+            		b=buffer5.array();
+            		break;
             } // switch
             if (b == null) {
                 out.println ("Table.pack: byte array b is null");
                 return null;
             } // if
-            for (int k = 0; k < s; k++) record [i++] = b [k];
+            for (int k = 0; k < b.length; k++){
+            	//System.out.println(i+ " "+ k);
+            	record [i++] = b [k];
+            }
         } // for
+       // System.out.println(record);
         return record;
     } // pack
-     */
+     
 
     /***************************************************************************
      * Unpack the record/byte-buffer (array of bytes) to reconstruct a tuple.
      * @param record  the byte-buffer in which the tuple is packed
      * @return  an unpacked tuple
-     * 
+     */
     Comparable [] unpack (byte [] record)
     {
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-
-        return null;
+        Comparable [] tuple = new Comparable [domain.length];
+    	ByteBuffer buf = ByteBuffer.wrap(record);
+    	int offset =0;
+    	//byte [] tempArray = buf.array();
+    	//System.out.println(tempArray.length);
+    	for (int j = 0; j < domain.length; j++) {
+            switch (domain [j].getName ()) {
+            	case "java.lang.Integer":
+            		byte [] intBytes = new byte[4];
+            		for(int x=0; x<4;++x){
+            			intBytes[x]= record[offset+x];
+            		}
+            		//System.out.println("integer: "+offset);
+            		ByteBuffer intBuf = ByteBuffer.wrap(intBytes);
+            		tuple[j]= intBuf.getInt();
+            		//System.out.println(tuple[j]);
+            		offset += 4;
+            		break;
+            	case "java.lang.String":
+            		//System.out.println("String: "+offset);
+            		ByteBuffer temp = ByteBuffer.wrap(record);
+            		int size = temp.getInt(offset+60);
+            		//System.out.println(size);
+            		byte [] string = new byte[size];
+            		for(int x=0;x<size;++x){
+            			//System.out.println(record[offset+x]);
+            			string[x]=record[offset+x];
+            		}
+            		String newString = new String(string);
+            		//System.out.println("new String: "+newString);
+            		tuple[j]=newString;
+            		offset+=64;
+            		break;
+            	case "java.lang.Short":
+            		//System.out.println("short: "+offset);
+            		tuple[j]=buf.getShort();
+            		offset+=2;
+            		break;
+            	case "java.lang.Float":
+            		//System.out.println("float:"+offset);
+            		tuple[j]=buf.getFloat();
+            		System.out.println(tuple[j]);
+            		offset+=4;
+            		break;
+            	case "java.lang.Double":
+            		//System.out.println("double: "+offset);
+            		tuple[j]=buf.getDouble();
+            		offset +=8;
+            		break;
+            	case "java.lang.Long":
+            		//System.out.println("long: "+offset);
+            		tuple[j]=buf.getLong();
+            		offset += 8;
+            		break;
+            } // switch
+            
+            
+           
+    	}
+    	
+        return tuple;
     } // unpack
-     */
+     
 
     /***************************************************************************
      * Determine the size of tuples in this table in terms of the number of bytes
      * required to store it in a record/byte-buffer.
      * @return  the size of packed-tuples in bytes
-     * 
+     */
     private int tupleSize ()
     {
-        int s = 0;
-
+       int s = 0;
         for (int j = 0; j < domain.length; j++) {
             switch (domain [j].getName ()) {
-            case "java.lang.Integer": s += 4;  break;
-            case "java.lang.String":  s += 64; break;
-
+            	case "java.lang.Integer": s += 4;  break;
+            	case "java.lang.String":  s += 64; break;
+            	case "java.lang.Long": s+= 8; break;
+            	case "java.lang.Short": s+= 2; break;
+            	case "java.lang.Double": s+= 8; break;
+            	case "java.lang.Float": s+=4;break;
               //-----------------\\ 
              // TO BE IMPLEMENTED \\
             //---------------------\\ 
-
             } // if
         } // for
-
         return s;
     } // tupleSize
-     */
+     
 
     //------------------------ Static Utility Methods --------------------------
 
