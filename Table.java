@@ -339,11 +339,11 @@ public class Table
         	case "!=":
         		// populating crossProd.  filling with only tuples where keys are equal
                 for(int i=0; i<tuples.size(); i++){
-                	for(int j=0; j<table2.attribute.length; j++){
+                	for(int j=0; j<table2.tuples.size(); j++){
                 		if(!(tuples.get(i)[t1_colNo].equals(table2.tuples.get(j)[t2_colNo]))){
                 			// creates temp array with length of cross product and copies this.table tuple into it
                         	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
-                        	for(int k=0; k<table2.tuples.size(); k++){ // adds in table2.tuple into temp
+                        	for(int k=0; k<table2.attribute.length; k++){ // adds in table2.tuple into temp
                         		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
                         	}
                         	crossProd.insert(temp);
@@ -429,6 +429,7 @@ public class Table
         for(Class iClass : domain){
         	try {
 				if(iClass.equals(Class.forName ("java.lang.Float"))){
+					out.println("283 Floatin");
 					domain[floatInd] = Class.forName ("java.lang.Double");
 					break;
 				}
@@ -632,8 +633,6 @@ public class Table
      * Pack tuple tup into a record/byte-buffer (array of bytes).
      * @param tup  the array of attribute values forming the tuple
      * @return  a tuple packed into a record/byte-buffer
-     * @author Chris Klappich
-     *
      */
     byte [] pack (Comparable [] tup)
     {
@@ -641,58 +640,45 @@ public class Table
         byte [] b      = null;
         int     i      = 0;
         byte [] temp = new byte[0];
-        //System.out.println(tupleSize());
+        
         for (int j = 0; j < domain.length; j++) {
-        	//ByteBuffer buffer = ByteBuffer.allocate(this.tupleSize());
-        	//System.out.println(tup[j]);
-        	//System.out.println("tuple: "+tup[j]);
+        
             switch (domain [j].getName ()) {
             	case "java.lang.Integer":
             		ByteBuffer buffer = ByteBuffer.allocate(4);
             		buffer.putInt((Integer)tup[j]);
             		b=buffer.array();
-            		//System.out.println(b.length);
             		break;
             	case "java.lang.String":
             		byte [] tempArray = new byte [64];
             		b = ((String) tup [j]).getBytes();
             		ByteBuffer buffer1 = ByteBuffer.allocate(4);
             		buffer1.putInt(b.length);
-            		//System.out.println("here: "+buffer1.getInt(0));
+            		
             		byte [] t = buffer1.array();
-//            		for(int x=0;x<t.length;++x){
-//            			System.out.println(t[x]);
-//            		}
-            		//System.out.println("String size: " +b.length);
+
             		int f=0;
             		for(int x=4; x>0;--x){
             			tempArray[64-x] = t[f];
             			++f;
-            			//System.out.println("in loop: "+t[f]);
+            			
             		}
             		for(int y=0;y<b.length;++y){
             			tempArray[y]=b[y];
             		}
             		b=tempArray;
-            		//System.out.println("Final length: "+b.length);
+            		
             		break;
             	case "java.lang.Short":
             		ByteBuffer buffer2 = ByteBuffer.allocate(2);
-            		int te = (Integer)tup[j];
-            		Short shortVal = (short)te;
-            		
-            		buffer2.putShort(shortVal);
+            		buffer2.putShort((Short)tup[j]);
             		b=buffer2.array();
             		break;
             	case "java.lang.Float":
-//            		ByteBuffer buffer3 = ByteBuffer.allocate(8);
-//            		buffer3.putDouble((Double)tup[j]);
-//            		b=buffer3.array();
-//            		break;
             		ByteBuffer buffer3 = ByteBuffer.allocate(4);
             		Double doub = (Double)tup[j];
             		float fl = doub.floatValue();
-            		System.out.println("float value: "+fl);
+            		System.out.println(fl);
             		buffer3.putFloat(fl);
             		b=buffer3.array();
             		break;
@@ -702,10 +688,8 @@ public class Table
             		b=buffer4.array();
             		break;
             	case "java.lang.Long":
-            		Integer temp_int = (Integer)tup[j];
-            		long temp_long   = temp_int.longValue();
             		ByteBuffer buffer5 = ByteBuffer.allocate(8);
-            		buffer5.putLong(temp_long);
+            		buffer5.putLong((Long)tup[j]);
             		b=buffer5.array();
             		break;
             } // switch
@@ -714,27 +698,23 @@ public class Table
                 return null;
             } // if
             for (int k = 0; k < b.length; k++){
-            	//System.out.println(i+ " "+ k);
             	record [i++] = b [k];
             }
         } // for
-       // System.out.println(record);
         return record;
     } // pack
+     
+
     /***************************************************************************
      * Unpack the record/byte-buffer (array of bytes) to reconstruct a tuple.
      * @param record  the byte-buffer in which the tuple is packed
      * @return  an unpacked tuple
-     * @author Chris Klappich
-     */ 
+     */
     Comparable [] unpack (byte [] record)
     {
-    	//System.out.println(record);
     	Comparable [] tuple = new Comparable [domain.length];
     	ByteBuffer buf = ByteBuffer.wrap(record);
     	int offset =0;
-    	//byte [] tempArray = buf.array();
-    	//System.out.println(tempArray.length);
     	for (int j = 0; j < domain.length; j++) {
             switch (domain [j].getName ()) {
             	case "java.lang.Integer":
@@ -742,29 +722,22 @@ public class Table
             		for(int x=0; x<4;++x){
             			intBytes[x]= record[offset+x];
             		}
-            		//System.out.println("integer: "+offset);
             		ByteBuffer intBuf = ByteBuffer.wrap(intBytes);
             		tuple[j]= intBuf.getInt();
-            		//System.out.println(tuple[j]);
             		offset += 4;
             		break;
-            	case "java.lang.String":
-            		//System.out.println("String: "+offset);
+            	case "java.lang.String":;
             		ByteBuffer temp = ByteBuffer.wrap(record);
             		int size = temp.getInt(offset+60);
-            		//System.out.println(size);
             		byte [] string = new byte[size];
             		for(int x=0;x<size;++x){
-            			//System.out.println(record[offset+x]);
             			string[x]=record[offset+x];
             		}
             		String newString = new String(string);
-            		//System.out.println("new String: "+newString);
             		tuple[j]=newString;
             		offset+=64;
             		break;
             	case "java.lang.Short":
-            		//System.out.println("short: "+offset);
             		byte [] shortBytes = new byte[2];
             		for(int x=0;x<2;++x){
             			shortBytes[x]=record[offset+x];
@@ -782,9 +755,7 @@ public class Table
             		tuple[j]=floatBuf.getFloat();
             		offset +=4;
             		break;
-
             	case "java.lang.Double":
-            		//System.out.println("double: "+offset);
             		byte [] doubleBytes = new byte[8];
             		for(int x=0;x<8;++x){
             			doubleBytes[x]=record[offset+x];
@@ -794,7 +765,6 @@ public class Table
             		offset +=8;
             		break;
             	case "java.lang.Long":
-            		//System.out.println("long: "+offset);
             		byte [] longBytes = new byte[8];
             		for(int x=0;x<8;++x){
             			longBytes[x]=record[offset+x];
@@ -804,22 +774,19 @@ public class Table
             		offset += 8;
             		break;
             } // switch
-            
-            
-           
     	}
-    	
         return tuple;
     } // unpack
+     
+
     /***************************************************************************
      * Determine the size of tuples in this table in terms of the number of bytes
      * required to store it in a record/byte-buffer.
      * @return  the size of packed-tuples in bytes
-     * @author Chris Klappich
-     */ 
-    public int tupleSize ()
+     */
+    int tupleSize ()
     {
-        int s = 0;
+       int s = 0;
         for (int j = 0; j < domain.length; j++) {
             switch (domain [j].getName ()) {
             	case "java.lang.Integer": s += 4;  break;
@@ -827,8 +794,7 @@ public class Table
             	case "java.lang.Long": s+= 8; break;
             	case "java.lang.Short": s+= 2; break;
             	case "java.lang.Double": s+= 8; break;
-            	case "java.lang.Float": s+=8;break;
-
+            	case "java.lang.Float": s+=4;break;
             } // if
         } // for
         return s;
