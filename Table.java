@@ -336,6 +336,23 @@ public class Table
                 	}
                 }
         		break;
+        	case "!=":
+        		// populating crossProd.  filling with only tuples where keys are equal
+                for(int i=0; i<tuples.size(); i++){
+                	for(int j=0; j<table2.attribute.length; j++){
+                		if(!(tuples.get(i)[t1_colNo].equals(table2.tuples.get(j)[t2_colNo]))){
+                			// creates temp array with length of cross product and copies this.table tuple into it
+                        	Comparable[] temp = Arrays.copyOf(tuples.get(i), crossProd.attribute.length); 
+                        	for(int k=0; k<table2.tuples.size(); k++){ // adds in table2.tuple into temp
+                        		temp[k+this.attribute.length] = table2.tuples.get(j)[k];
+                        	}
+                        	crossProd.insert(temp);
+                		}
+                	}
+                }
+        		break;
+        		
+        		
         	case ">":
         		for(int i=0; i<tuples.size(); i++){
                 	for(int j=0; j<table2.tuples.size(); j++){
