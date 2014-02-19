@@ -139,9 +139,9 @@ class MovieDB
         out.println("----------------TEST------------------TEST---------------TEST------------TEST--------------------\n");
         String [] array = {"1970", "year", "<", "year", "1990", "<", "&"};
         
-        Table random = new Table("random", "name year long", "String String Short", "name");
+        Table random = new Table("random", "double short long", "Double Short Long", "double");
         
-        Comparable [] random1 = { "Star_Wars", "Lucas", 10};
+        Comparable [] random1 = {5.55555555555, 404, 10};
         
         FileList studioList = new FileList(studio,studio.tupleSize());
         studioList.add(studio0);
@@ -168,6 +168,12 @@ class MovieDB
            	System.out.println(temp2[x]);
         }
         
+        //out.println();
+        //Table t3_join = starsIn.join("movieTitle == title", movie);
+        //t3_join.print();
+        
+        
+       
         
     } // main
 
