@@ -410,41 +410,6 @@ public class Table
                 }
         		break;
         }
-        
-        
-        
-//      for(int i=0; i<table2.tuples.size(); i++){
-//    	List <Comparable[]> tempList = new ArrayList();
-//    	tempList.add((Comparable[]) Arrays.copyOf(table2.tuples.get(i), crossProd.tuples.size()));
-//    	Comparable[] temp = Collections.reverse(tempList);
-//    	crossProd.insert(tuples.get(i));
-//    }
-//    for(int i=0; i<tuples.size()+table2.tuples.size()-2; i++){
-//    	for(int j=0; j<table2.tuples.size(); j++){
-//    		if(tuples.get(i)[t1_colNo].equals(table2.tuples.get(j)[t2_colNo])){
-//    			List <Comparable[]> combineList = new ArrayList(Arrays.asList(tuples.get(i)));
-//            	combineList.add(table2.tuples.get(i));
-//            	Comparable[] combined = (Comparable[]) combineList.toArray();
-//    		}
-//    	}
-//    	List <Comparable[]> combineList = new ArrayList(Arrays.asList(tuples.get(i)));
-//    	combineList.add(table2.tuples.get(i));
-//    	Comparable[] combined = (Comparable[]) combineList.toArray();
-//    	//Comparable[] combined = combine(tuples.get(i),table2.tuples.get(i));
-//    	crossProd.insert(tuples.get(i));
-//    }
-//    for(int i=0; i<table2.tuples.size(); i++){
-//    	crossProd.insert(table2.tuples.get(i));
-//    }
-
-    
-
-             //-----------------\\ 
-            // TO BE IMPLEMENTED \\
-           //---------------------\\ 
-        
-        
-
         return crossProd;
     } // join
 
@@ -673,39 +638,34 @@ public class Table
         byte [] b      = null;
         int     i      = 0;
         byte [] temp = new byte[0];
-        //System.out.println(tupleSize());
+        
         for (int j = 0; j < domain.length; j++) {
-        	//ByteBuffer buffer = ByteBuffer.allocate(this.tupleSize());
-        	//System.out.println(tup[j]);
+        
             switch (domain [j].getName ()) {
             	case "java.lang.Integer":
             		ByteBuffer buffer = ByteBuffer.allocate(4);
             		buffer.putInt((Integer)tup[j]);
             		b=buffer.array();
-            		//System.out.println(b.length);
             		break;
             	case "java.lang.String":
             		byte [] tempArray = new byte [64];
             		b = ((String) tup [j]).getBytes();
             		ByteBuffer buffer1 = ByteBuffer.allocate(4);
             		buffer1.putInt(b.length);
-            		//System.out.println("here: "+buffer1.getInt(0));
+            		
             		byte [] t = buffer1.array();
-//            		for(int x=0;x<t.length;++x){
-//            			System.out.println(t[x]);
-//            		}
-            		//System.out.println("String size: " +b.length);
+
             		int f=0;
             		for(int x=4; x>0;--x){
             			tempArray[64-x] = t[f];
             			++f;
-            			//System.out.println("in loop: "+t[f]);
+            			
             		}
             		for(int y=0;y<b.length;++y){
             			tempArray[y]=b[y];
             		}
             		b=tempArray;
-            		//System.out.println("Final length: "+b.length);
+            		
             		break;
             	case "java.lang.Short":
             		ByteBuffer buffer2 = ByteBuffer.allocate(2);
@@ -736,11 +696,9 @@ public class Table
                 return null;
             } // if
             for (int k = 0; k < b.length; k++){
-            	//System.out.println(i+ " "+ k);
             	record [i++] = b [k];
             }
         } // for
-       // System.out.println(record);
         return record;
     } // pack
      
@@ -752,11 +710,9 @@ public class Table
      */
     Comparable [] unpack (byte [] record)
     {
-        Comparable [] tuple = new Comparable [domain.length];
+    	Comparable [] tuple = new Comparable [domain.length];
     	ByteBuffer buf = ByteBuffer.wrap(record);
     	int offset =0;
-    	//byte [] tempArray = buf.array();
-    	//System.out.println(tempArray.length);
     	for (int j = 0; j < domain.length; j++) {
             switch (domain [j].getName ()) {
             	case "java.lang.Integer":
@@ -764,54 +720,59 @@ public class Table
             		for(int x=0; x<4;++x){
             			intBytes[x]= record[offset+x];
             		}
-            		//System.out.println("integer: "+offset);
             		ByteBuffer intBuf = ByteBuffer.wrap(intBytes);
             		tuple[j]= intBuf.getInt();
-            		//System.out.println(tuple[j]);
             		offset += 4;
             		break;
-            	case "java.lang.String":
-            		//System.out.println("String: "+offset);
+            	case "java.lang.String":;
             		ByteBuffer temp = ByteBuffer.wrap(record);
             		int size = temp.getInt(offset+60);
-            		//System.out.println(size);
             		byte [] string = new byte[size];
             		for(int x=0;x<size;++x){
-            			//System.out.println(record[offset+x]);
             			string[x]=record[offset+x];
             		}
             		String newString = new String(string);
-            		//System.out.println("new String: "+newString);
             		tuple[j]=newString;
             		offset+=64;
             		break;
             	case "java.lang.Short":
-            		//System.out.println("short: "+offset);
-            		tuple[j]=buf.getShort();
+            		byte [] shortBytes = new byte[2];
+            		for(int x=0;x<2;++x){
+            			shortBytes[x]=record[offset+x];
+            		}
+            		ByteBuffer shortBuf = ByteBuffer.wrap(shortBytes);
+            		tuple[j]=shortBuf.getShort();
             		offset+=2;
             		break;
             	case "java.lang.Float":
-            		//System.out.println("float:"+offset);
-            		tuple[j]=buf.getFloat();
-            		System.out.println(tuple[j]);
-            		offset+=4;
+            		byte [] floatBytes = new byte[4];
+            		for(int x=0;x<4;++x){
+            			floatBytes[x]=record[offset+x];
+            		}
+            		ByteBuffer floatBuf = ByteBuffer.wrap(floatBytes);
+            		tuple[j]=floatBuf.getFloat();
+            		offset +=4;
             		break;
             	case "java.lang.Double":
-            		//System.out.println("double: "+offset);
-            		tuple[j]=buf.getDouble();
+            		byte [] doubleBytes = new byte[8];
+            		for(int x=0;x<8;++x){
+            			doubleBytes[x]=record[offset+x];
+            		}
+            		ByteBuffer doubleBuf = ByteBuffer.wrap(doubleBytes);
+            		tuple[j]=doubleBuf.getDouble();
             		offset +=8;
             		break;
             	case "java.lang.Long":
-            		//System.out.println("long: "+offset);
-            		tuple[j]=buf.getLong();
+            		byte [] longBytes = new byte[8];
+            		for(int x=0;x<8;++x){
+            			longBytes[x]=record[offset+x];
+            		}
+            		ByteBuffer longBuf = ByteBuffer.wrap(longBytes);
+            		tuple[j]=longBuf.getLong();
             		offset += 8;
             		break;
             } // switch
-            
-            
-           
     	}
-    	
         return tuple;
     } // unpack
      
@@ -821,7 +782,7 @@ public class Table
      * required to store it in a record/byte-buffer.
      * @return  the size of packed-tuples in bytes
      */
-    private int tupleSize ()
+    int tupleSize ()
     {
        int s = 0;
         for (int j = 0; j < domain.length; j++) {
@@ -832,9 +793,6 @@ public class Table
             	case "java.lang.Short": s+= 2; break;
             	case "java.lang.Double": s+= 8; break;
             	case "java.lang.Float": s+=4;break;
-              //-----------------\\ 
-             // TO BE IMPLEMENTED \\
-            //---------------------\\ 
             } // if
         } // for
         return s;
@@ -941,9 +899,7 @@ public class Table
         for(int x=0;x<postfix.length;++x){
         	//System.out.println("looking at "+infix[x]);
         	if(!isComparison(infix[x])&&(!infix[x].equals("&")&&!infix[x].equals("|")&&!infix[x].equals("-"))){
-        		//System.out.println("is string");
         		postfix[insertPoint]=infix[x];
-        		//System.out.println("adding this to list " + infix[x]);
         		++insertPoint;
         		if(prevExp==false){
         			//System.out.println("switch");

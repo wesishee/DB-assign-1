@@ -139,8 +139,34 @@ class MovieDB
         out.println("----------------TEST------------------TEST---------------TEST------------TEST--------------------\n");
         String [] array = {"1970", "year", "<", "year", "1990", "<", "&"};
         
-        //UnionTest1 = new Table{
-        //}
+        Table random = new Table("random", "name year long", "String String Short", "name");
+        
+        Comparable [] random1 = { "Star_Wars", "Lucas", 10};
+        
+        FileList studioList = new FileList(studio,studio.tupleSize());
+        studioList.add(studio0);
+        studioList.add(studio1);
+        studioList.add(studio2);
+        //studioList.get(1);
+        Comparable [] temp2=studioList.get(0);
+        for(int x=0;x<temp2.length;++x){
+       	System.out.println(temp2[x]);
+        }
+        temp2=studioList.get(1);
+        for(int x=0;x<temp2.length;++x){
+           	System.out.println(temp2[x]);
+        }
+        temp2=studioList.get(2);
+        for(int x=0;x<temp2.length;++x){
+           	System.out.println(temp2[x]);
+        }
+        System.out.println("new test");
+        FileList randomList = new FileList(random,random.tupleSize());
+        randomList.add(random1);
+        temp2=randomList.get(0);
+        for(int x=0;x<temp2.length;++x){
+           	System.out.println(temp2[x]);
+        }
         
         
     } // main
