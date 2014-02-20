@@ -87,22 +87,55 @@ class MovieDB
         studio.insert (studio2);
         studio.print ();
 
-        out.println ();
-        Table t_project = movie.project ("title year");
-        t_project.print ();
+                out.println ();
 
-        out.println("SELECT----------------SELECT------------------SELECT---------------SELECT------------SELECT--------------------\n");
+        out.println("\nSELECT----------------SELECT------------------SELECT---------------SELECT------------SELECT--------------------\n");
         out.println ();
-        Table t_select = movie.select ("title == Star_Wars & year > 1955");
-        t_select.print ();
-
-
-        out.println("UNION----------------UNION------------------UNION---------------UNION------------UNION--------------------\n");
-        out.println ();
+        //Table t_select1 = movie.select ("title == Star_Wars & year > 1955");
+        Table t_select1 = movie.select ("title == Star_Wars");
+        t_select1.print ();
         
+        out.println ();
+        Table t_select2 = movie.select ("length > 100 & studioName == Universal | genre == sciFi");
+        t_select2.print ();
         
-        Table t_union = movie.union (cinema);
-        //Table U
+        out.println("\nPROJECT----------------PROJECT------------------PROJECT---------------PROJECT------------PROJECT--------------------");
+        out.println ();
+        Table t_project1 = movie.project ("title year");
+        t_project1.print ();
+
+		out.println ();
+        Table t_project2 = cinema.project ("title genre studioName");
+        t_project2.print ();
+
+        out.println("\nUNION----------------UNION------------------UNION---------------UNION------------UNION--------------------");
+        out.println ();
+        Table t_union1 = movie.union (cinema);
+        t_union1.print ();
+        
+        out.println ();
+        Table t_union2 = movieStar.union (studio);
+        t_union2.print ();
+        
+        out.println("\nMINUS----------------MINUS------------------MINUS---------------MINUS------------MINUS--------------------");
+        out.println ();
+        Table t_minus1 = movie.minus (cinema);
+        t_minus1.print ();
+        
+        out.println ();
+        Table t_minus2 = movieStar.minus (studio);
+        t_minus2.print ();
+        
+        out.println("\nJOIN----------------JOIN------------------JOIN---------------JOIN------------JOIN--------------------");
+        out.println ();
+        Table t_join1 = movie.join ("studioName == name", studio);
+        t_join1.print ();
+        
+        out.println ();
+        Table t_join2 = movieStar.join ("name == starName", starsIn);
+        t_join2.print ();
+        
+        /* Table U
         Table unionTest1 = new Table ("movieExec", "certNo name address fee",
                 "Integer String String Float", "certNo");
         Table unionTest2 = new Table ("movieExec", "certNo name address fee",
@@ -113,8 +146,6 @@ class MovieDB
         Comparable [] exec2 = { 9998, "M_Scorcese", "Atlanta", 50000.00 };
         
         Comparable [] exec3 = { 10000, "W_Disney", "Orlando", 1.00 };
-        Comparable [] exec4 = { 99995, "Fuck", "JAX", 10000.50 };
-        Comparable [] exec5 = { 9899, "Shit", "NYC", 10000.70 };
         
         unionTest1.insert(exec10);
         unionTest1.insert(exec1);
@@ -171,7 +202,7 @@ class MovieDB
         //out.println();
         //Table t3_join = starsIn.join("movieTitle == title", movie);
         //t3_join.print();
-        
+        */
         
        
         
