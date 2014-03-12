@@ -1,4 +1,4 @@
-Project 2
+Project 3
 ===========
 
 Team 4:
@@ -8,22 +8,14 @@ Team 4:
 	Chris Klappich
 	James Smith
 
-This project implements the Join Operator, Simple Indexing and FileList.
+This project implements Index Structures, including B+Tree and Linear Hashing.
 
-To run the code, compile files included in the .zip file. The Main method is
-located in MovieDB.java
+To run the code, compile files included in the .zip file. The Main methods are
+located in BpTree.java, LinHash.java, and MovieDB.java
 
 Commands:
-     javac MovieDB.java
+     javac BpTree.java LinHash.java MovieDB.java
+     java BpTree
+     java LinHash
      java MovieDB
-     
-The output is that of the original tables used and a few test cases for select,
-project, union, and minus.
-
-Our javadoc files are located in the folder named "doc". Open index.html to be
-brought to a website including all the javadocs on one handy site.  
-
-Our union method is not set up to return the original table in the event of a
-compatability error. This was not a requirement stated in comments, so it was
-not implemented. We were not penalized for this in Project 1. 
 
