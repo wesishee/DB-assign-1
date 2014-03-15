@@ -36,18 +36,45 @@ public class BpTree <K extends Comparable <K>, V>
     private class Node
     {
         boolean   isLeaf;
-        int       nKeys;
+        int       nKeys; // max = ORDER - 1
         K []      key;
         Object [] ref;
-        @SuppressWarnings("unchecked")
+        Node parent;
+        Node nextLeaf;
+        
         Node (boolean _isLeaf)
         {
             isLeaf = _isLeaf;
             nKeys  = 0;
             key    = (K []) Array.newInstance (classK, ORDER - 1);
+            
             if (isLeaf) {
                 //ref = (V []) Array.newInstance (classV, ORDER);
                 ref = new Object [ORDER];
+            } else {
+                ref = (Node []) Array.newInstance (Node.class, ORDER);
+            } // if
+        } // constructor
+        
+        
+        @SuppressWarnings("unchecked")
+        Node (boolean _isLeaf, Node par)
+        {
+            isLeaf = _isLeaf;
+            nKeys  = 0;
+            key    = (K []) Array.newInstance (classK, ORDER - 1);
+            parent = par;
+            if (isLeaf) {
+                //ref = (V []) Array.newInstance (classV, ORDER);
+                ref = new Object [ORDER];
+                for (int j=0; j<nKeys; j++){
+                	for (int i=0; i<parent.key.length; i++){
+                		if (parent.key[i].compareTo(key[j]) == 0){
+                			 nextLeaf = (Node) parent.ref[i];
+                			 break;
+                		}
+                	}
+                }
             } else {
                 ref = (Node []) Array.newInstance (Node.class, ORDER);
             } // if
@@ -255,24 +282,54 @@ public class BpTree <K extends Comparable <K>, V>
      */
     private void insert (K key, V ref, Node n, Node p)
     {
-        if (n.nKeys < ORDER - 1) {
-            for (int i = 0; i < n.nKeys; i++) {
-                K k_i = n.key [i];
-                if (key.compareTo (k_i) < 0) {
-                    wedge (key, ref, n, i);
-                } else if (key.equals (k_i)) {
-                    out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
-                } // if
-            } // for
-            wedge (key, ref, n, n.nKeys);
-        } else {
-            Node sib = split (key, ref, n);
+    	if(n.isLeaf){//This node is a leaf node
+    	    if (n.nKeys < ORDER - 1) {//Node is not full
+    	        for (int i = 0; i < n.nKeys; i++) {
+    	        	K k_i = n.key [i];
+    	        	if (key.compareTo (k_i) < 0) {
+    	        		wedge (key, ref, n, i);
+    	        	} else if (key.equals (k_i)) {
+    	        		out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
+    	        	} // if
 
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
-
-        } // if
+    	        } // for
+    	        wedge (key, ref, n, n.nKeys);
+    	        return;
+    	    } else {//Node is full
+    	        split (key, ref, n);
+    	        return;
+    	    } // else  
+    	}   
+    	else{//This node is an internal node
+    	        for (int i = 0; i < n.nKeys; i++) {
+    	            K k_i = n.key [i];
+    	            if (key.compareTo (k_i) <= 0) {
+    	                insert (key, ref, (Node) n.ref[i], n);
+    	                return;
+    	            }
+    	        } // for
+    	        insert (key, ref, (Node) n.ref[n.nKeys], n);
+    	        return;
+    	}
+    	
+//        if (n.nKeys < ORDER - 1) {
+//            for (int i = 0; i < n.nKeys; i++) {
+//                K k_i = n.key [i];
+//                if (key.compareTo (k_i) < 0) {
+//                    wedge (key, ref, n, i);
+//                } else if (key.equals (k_i)) {
+//                    out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
+//                } // if
+//            } // for
+//            wedge (key, ref, n, n.nKeys);
+//        } else {
+//            Node sib = split (key, ref, n);
+//
+//             //-----------------\\
+//            // TO BE IMPLEMENTED \\
+//           //---------------------\\
+//
+//        } // if
     } // insert
 
     /***************************************************************************
@@ -291,6 +348,7 @@ public class BpTree <K extends Comparable <K>, V>
         n.key [i] = key;
         n.ref [i] = ref;
         n.nKeys++;
+        
     } // wedge
 
     /***************************************************************************
@@ -302,10 +360,96 @@ public class BpTree <K extends Comparable <K>, V>
     private Node split (K key, V ref, Node n)
     {
         out.println ("split not implemented yet");
-
-             //-----------------\\
+        
+        if(n == root){
+            Node new_root = new Node(false, n.parent);
+            root = new_root;
+            n.parent = new_root;
+            new_root.ref[0] = n;
+        }
+        if(n.isLeaf){
+            Node sibling = new Node(true, n.parent);
+            for (int i = 0; i<n.parent.nKeys; i++){
+            	if(n.key[n.nKeys-1].compareTo(n.parent.key[i]) < 0){
+            		n.nextLeaf = (Node) n.parent.ref[i];
+            	}
+            }
+            Node aux = n.nextLeaf;
+            n.nextLeaf = sibling;
+            sibling.nextLeaf = aux;
+            Node lastLeaf = (Node) n.parent.ref[n.parent.nKeys-1];
+            if(n == lastLeaf){
+                lastLeaf = sibling;
+            }
+            K[] _key = (K []) Array.newInstance (classK, ORDER);
+            V[] _ref = (V []) Array.newInstance (classV, ORDER);
+            
+        
+            //-----------------\\
             // TO BE IMPLEMENTED \\
            //---------------------\\
+        }
+        else{//Splitting an internal node
+            Node sibling = new Node(false,n.parent);
+            
+            K[] _key = (K []) Array.newInstance (classK, ORDER);
+            Node[] _ref = (Node[]) Array.newInstance (Node.class, ORDER+1);
+            
+            //-----------------\\
+            // TO BE IMPLEMENTED \\
+           //---------------------\\
+
+            
+            //out.println("nKeys: " + n.nKeys + "\tcount: " + count);
+            _ref[count] = (Node) n.ref[n.nKeys];//Copy the 'else' pointer
+            //Restore the Node to empty, ready to be re-filled
+            for(int i = 0; i < ORDER-1; i++){
+                n.key[i] = null;
+                n.ref[i] = null;
+            }
+            //size -= n.nKeys;
+            n.nKeys = 0;
+            for (int i = ORDER-1; i >= 0; i--){//Copy keys and references to the proper objects
+                if(i > ORDER/2){
+                    if(i == ORDER-1){
+                        //out.println("Sibling - Rightmost Ref");
+                        sibling.ref[0] = _ref[ORDER];
+                        _ref[ORDER].parent = sibling;
+                    }
+                    //out.println("Sibling - Key/Ref Pair");
+                    wedge(_key[i],_ref[i],sibling,0);
+                    _ref[i].parent = sibling;
+                }
+                else{
+                    if(i == ORDER/2){
+                        //out.println("N Node - Rightmost Ref");
+                        n.ref[0] = _ref[i];
+                    }
+                    else{
+                        //out.println("N Node - Key/Ref Pair");
+                        wedge(_key[i],_ref[i],n,0);
+                    }
+                }
+                
+            }
+            int loc=0;
+            for(int i = 0; i < ORDER; i++){//Move the pointer to the sibling
+                if(n.parent.ref[i] == n){
+                    n.parent.ref[i] = sibling;
+                    loc = i;
+                }
+            }
+            if(n.parent.nKeys == ORDER-1){//If parent is full
+                //out.println("Throwing " + _key[ORDER/2]);
+                return split(_key[ORDER/2],n,n.parent);//Split the parent
+            }
+            else{//Parent not full
+                //out.println("Throwing " + _key[ORDER/2]);
+                return wedge(_key[ORDER/2],n,n.parent,loc);//Insert to the parent 
+            }
+        }
+
+
 
         return null;
     } // split
