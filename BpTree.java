@@ -7,7 +7,9 @@
 
 import java.io.*;
 import java.lang.reflect.Array;
+
 import static java.lang.System.out;
+
 import java.util.*;
 
 /*******************************************************************************
@@ -283,6 +285,8 @@ public class BpTree <K extends Comparable <K>, V>
     private void insert (K key, V ref, Node n, Node p)
     {
     	if(n.isLeaf){//This node is a leaf node
+    		
+    		
     	    if (n.nKeys < ORDER - 1) {//Node is not full
     	        for (int i = 0; i < n.nKeys; i++) {
     	        	K k_i = n.key [i];
@@ -406,12 +410,56 @@ public class BpTree <K extends Comparable <K>, V>
             new_root.ref[1] = new_rc;
         }
         if(n.isLeaf){
-            Node sibling = new Node(true, n.parent);
+        	// copies n.key into tempKeys and adds the key to be inserted
+        	K[] tempKeys = Arrays.copyOf(n.key, ORDER);
+        	V[] tempVals = (V[]) Arrays.copyOf(n.ref, ORDER+1);
+    		tempKeys[ORDER] = key;
+    		Arrays.sort(tempKeys);// sorts tempKeys
+    		tempVals[ORDER] = ref;
+    		Arrays.sort(tempVals);
+    		K keySplit = tempKeys[tempKeys.length/2]; // finds middle of key array to split on
+    		V refSplit = tempVals[tempVals.length/2]; // finds middle of reference array to split on
+    		
+    		// clears n.key of all keys after the splitting point
+    		for (int i=n.key.length/2; i<n.key.length; i++) 
+    			n.key[i] = null;
+    		tempKeys = Arrays.copyOfRange(tempKeys, ORDER/2, ORDER); // removes lower, stationary keys from tempKeys
+    		
+    		// clears n.ref of all keys after the splitting point
+    		for (int i=n.ref.length/2; i<n.ref.length; i++) 
+    			n.ref[i] = null;
+    		tempVals = Arrays.copyOfRange(tempVals, ORDER/2, ORDER); // removes lower, stationary refs from tempVals
+    		
+    		// clears n.key of all references after the splitting point
+    		for (int i=n.ref.length/2; i<n.ref.length; i++) 
+    			n.ref[i] = null;
+    		
+    		// create and populate sibling node
+    		Node sibling = new Node(true, n.parent);
+    		sibling.key = tempKeys;
+    		sibling.ref = tempVals;
+    		sibling.nKeys = sibling.key.length;
+    		
+    		if(n.parent.key.length == ORDER-1){ // parent is full
+    			split(keySplit, (V) sibling, n.parent); // I HAVE NO IDEA IF THIS WORKS OR NOT!!!!!!!!!!!!!!!!!!!!!
+    		}else{ // parent is NOT full
+    			for(int i=0; i<n.parent.nKeys-1; i++){ // iterate through parent and find where keySplit and refSplit should go
+    				if(tempKeys[0].compareTo(n.parent.key[i]) < 0){
+    					wedge(keySplit, (V) sibling, n.parent, i);
+    				}
+    			}
+    		}
+    		
+    		// set n.nextLeaf to be sibling
             for (int i = 0; i<n.parent.nKeys; i++){
             	if(n.key[n.nKeys-1].compareTo(n.parent.key[i]) < 0){
             		n.nextLeaf = (Node) n.parent.ref[i];
+            	}else if(n.key[n.nKeys-1].compareTo(n.parent.key[i]) > 0 && i >= n.nKeys){
+            		n.nextLeaf = (Node) n.parent.ref[i+1];
             	}
             }
+//            for (int i=0; i<ORDER/2; i++) // populates sibling keys with remaining keys from tempKeys
+//            	sibling.key[i] = tempKeys[i];
             Node aux = n.nextLeaf;
             n.nextLeaf = sibling;
             sibling.nextLeaf = aux;
@@ -419,8 +467,10 @@ public class BpTree <K extends Comparable <K>, V>
             if(n == lastLeaf){
                 lastLeaf = sibling;
             }
-            K[] _key = (K []) Array.newInstance (classK, ORDER);
-            V[] _ref = (V []) Array.newInstance (classV, ORDER);
+            
+//            sibling.key[0] = keySplit;
+//            K[] _key = (K []) Array.newInstance (classK, ORDER);
+//            V[] _ref = (V []) Array.newInstance (classV, ORDER);
             
         
              //-----------------\\
