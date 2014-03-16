@@ -115,15 +115,27 @@ public class BpTree <K extends Comparable <K>, V>
     /***************************************************************************
      * Return a set containing all the entries as pairs of keys and values.
      * @return  the set view of the map
+     * @author Chris Klappich
      */
     public Set <Map.Entry <K, V>> entrySet ()
     {
         Set <Map.Entry <K, V>> enSet = new HashSet <> ();
-
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
-            
+        Node temp = root;
+        while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+        while(temp != null){
+        	for(int x=0; x< temp.nKeys;++x){
+        		Map.Entry temp1 = (Map.Entry)temp.ref[x];
+        		enSet.add(temp1);
+        	}
+        	temp = temp.nextLeaf;
+        }
         return enSet;
     } // entrySet
 
@@ -153,81 +165,181 @@ public class BpTree <K extends Comparable <K>, V>
     /***************************************************************************
      * Return the first (smallest) key in the B+Tree map.
      * @return  the first key in the B+Tree map.
+     * @author Chris Klappich
      */
     public K firstKey () 
     {
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
-
-        return null;
+    	Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+        return temp.key[0];
     } // firstKey
 
     /***************************************************************************
      * Return the last (largest) key in the B+Tree map.
      * @return  the last key in the B+Tree map.
+     * @author Chris Klappich
      */
     public K lastKey () 
     {
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
+    	Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[temp.nKeys-1];
+    		}
+    	}
 
-        return null;
+        return temp.key[temp.nKeys-1];
     } // lastKey
 
     /***************************************************************************
      * Return the portion of the B+Tree map where key < toKey.
      * @return  the submap with keys in the range [firstKey, toKey)
+     * @author Chris Klappich
      */
     public SortedMap <K,V> headMap (K toKey)
     {
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
+    	BpTree head_map = new BpTree(classK,classV);
+    	Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+    	boolean atKey = false;
+    	while(true){
+    		for(int x=0;x<temp.nKeys;++x){
+    			head_map.put(temp.key[x], temp.ref[x]);
+    			if(temp.key[x].compareTo(toKey)==0){
+    				atKey = true;
+    				break;
+    			}
+    		}
+    		if(atKey){
+    			break;
+    		}
+    		else{
+    			temp = temp.nextLeaf;
+    		}
+    	}
 
-        return null;
+        return head_map;
     } // headMap
 
     /***************************************************************************
      * Return the portion of the B+Tree map where fromKey <= key.
      * @return  the submap with keys in the range [fromKey, lastKey]
+     * @author Chris Klappich
      */
     public SortedMap <K,V> tailMap (K fromKey)
     {
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
+    	BpTree tail_map = new BpTree(classK,classV);
+    	Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+    	boolean atKey = false;
+    	while(true){
+    		for(int x=0;x<temp.nKeys;++x){
+    			if(temp.key[x].compareTo(fromKey)==0){
+    				atKey = true;
+    			}
+    			if(atKey){
+    				tail_map.put(temp.key[x], temp.ref[x]);
+    			}
+    			
+    		}
+    		if(temp.nextLeaf != null){
+    			temp = temp.nextLeaf;
+    		}
+    		else{
+    			break;
+    		}
+    	}
 
-        return null;
+        return tail_map;
     } // tailMap
 
     /***************************************************************************
      * Return the portion of the B+Tree map whose keys are between fromKey and toKey,
      * i.e., fromKey <= key < toKey.
      * @return  the submap with keys in the range [fromKey, toKey)
+     * @author Chris Klappich
      */
     public SortedMap <K,V> subMap (K fromKey, K toKey)
     {
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
+    	BpTree sub_map = new BpTree(classK,classV);
+    	Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+    	boolean firstKey = false;
+    	boolean lastKey = false;
+    	while(temp != null){
+    		for(int x=0;x<temp.nKeys;++x){
+    			if(temp.key[x].compareTo(fromKey)==0){
+    				firstKey =true;
+    			}
+    			if(temp.key[x].compareTo(toKey)==0){
+    				lastKey=true;
+    				break;
+    			}
+    			if(firstKey ==true && lastKey == false){
+    				sub_map.put(temp.key[x], temp.ref[x]);
+    			}
+    		}
+    		if(lastKey){
+    			break;
+    		}
+    		temp = temp.nextLeaf;
+    	}
 
-        return null;
+        return sub_map;
     } // subMap
 
     /***************************************************************************
      * Return the size (number of keys) in the B+Tree.
      * @return  the size of the B+Tree
+     * @author Chris Klappich
      */
     public int size ()
     {
         int sum = 0;
-
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
-
+        Node temp = root;
+    	while(true){
+    		if(temp.isLeaf){
+    			break;
+    		}
+    		else{
+    			temp = (Node) temp.ref[0];
+    		}
+    	}
+    	while(temp != null){
+    		sum += temp.nKeys;
+    		temp = temp.nextLeaf;
+    	}
         return  sum;
     } // size
 
@@ -285,8 +397,6 @@ public class BpTree <K extends Comparable <K>, V>
     private void insert (K key, V ref, Node n, Node p)
     {
     	if(n.isLeaf){//This node is a leaf node
-    		
-    		
     	    if (n.nKeys < ORDER - 1) {//Node is not full
     	        for (int i = 0; i < n.nKeys; i++) {
     	        	K k_i = n.key [i];
@@ -360,15 +470,17 @@ public class BpTree <K extends Comparable <K>, V>
      * @param key  the key to insert
      * @param ref  the value/node to insert
      * @param n    the current node
+     * @author Chris Klappich
+     * @author Wes Ishee
      */
     private Node split (K key, V ref, Node n)
     {
         out.println ("split not implemented yet");
         
         if(n == root){
-        	K[] _key = (K []) Array.newInstance (classK, ORDER);
+            K[] _key = (K []) Array.newInstance (classK, ORDER);
             V[] _ref = (V []) Array.newInstance (classV, ORDER+1);
-             int y=0;
+            int y=0;
             for(int x=0;x<n.key.length+1;++x){
                	/**
                	 * Adds all Keys and their respective refs to array
@@ -381,8 +493,8 @@ public class BpTree <K extends Comparable <K>, V>
                	}
                	else{
                		_key[x] = n.key[y];
-               		_ref[x] = (V) n.ref[y];
-               		if(y==4){
+                	_ref[x] = (V) n.ref[y];
+                	if(y==4){
                			_ref[x+1] = (V) n.ref[y+1];
                			++x;
                		}
@@ -390,24 +502,30 @@ public class BpTree <K extends Comparable <K>, V>
                		
                	}
                	
-            }
-            
-            Node new_root = new Node(false,null);
-            Node new_lc = new Node(false, new_root);
-            new_root.key[0] = _key[2];
-            new_lc.key[0] = _key[0];
-            new_lc.key[1] = _key[1];
-            new_lc.ref[0] = _ref[0];
-            new_lc.ref[1] = _ref[1];
-            new_lc.ref[2] = _ref[2];
-            new_root.ref[0] = new_lc;
-            Node new_rc = new Node(false,null);
-            new_rc.key[0] = _key[3];
-            new_rc.key[1] = _key[4];
-            new_rc.ref[0] = _ref[3];
-            new_rc.ref[1] = _ref[4];
-            new_rc.ref[2] = _ref[5];
-            new_root.ref[1] = new_rc;
+               }
+           	
+           	Node new_root = new Node(false,null);
+           	Node new_lc = new Node(false, new_root);
+           	new_root.key[0] = _key[2];
+           	Node new_rc = new Node(false,null);
+           	y=0;
+           	for(int x=0;x<ORDER;++x){
+           		if(x<2){
+           			new_lc.key[x] = _key[x];
+            		new_lc.ref[x] = _ref[x];
+            	}
+           		else{
+           			new_rc.key[y] = _key[x];
+           			new_rc.ref[y] = _ref[x];
+           			++y;
+           			if(x==4){
+           				new_rc.ref[y] = _ref[x+1];
+           			}
+           		}
+           	}
+           	new_root.ref[0] = new_lc;
+           	new_root.ref[1] = new_rc;
+           	root=new_root;
         }
         if(n.isLeaf){
         	// copies n.key into tempKeys and adds the key to be inserted
@@ -476,7 +594,7 @@ public class BpTree <K extends Comparable <K>, V>
              //-----------------\\
             // TO BE IMPLEMENTED \\
            //---------------------\\
-        }
+        }        
         else{//Splitting an internal node
             Node sibling = new Node(false,n.parent);
             
@@ -487,9 +605,31 @@ public class BpTree <K extends Comparable <K>, V>
             // TO BE IMPLEMENTED \\
            //---------------------\\
 
-            
+            int y=0;
+            for(int x=0;x<n.key.length+1;++x){
+               	/**
+               	 * Adds all Keys and their respective refs to array
+               	 * Maintains order as to determine which value will be promoted to 
+               	 * the new root node
+               	 */
+               	if(n.key[y-1].compareTo(key)<0 && n.key[y].compareTo(key)>0){
+               		_key[x] = key;
+               		_ref[x] = (Node) ref;
+               	}
+               	else{
+               		_key[x] = n.key[y];
+                	_ref[x] = (Node) n.ref[y];
+                	if(y==4){
+               			_ref[x+1] = (Node) n.ref[y+1];
+               			++x;
+               		}
+               		++y;
+               		
+               	}
+               	
+            }
             //out.println("nKeys: " + n.nKeys + "\tcount: " + count);
-            _ref[count] = (Node) n.ref[n.nKeys];//Copy the 'else' pointer
+            //_ref[count] = (Node) n.ref[n.nKeys];//Copy the 'else' pointer
             //Restore the Node to empty, ready to be re-filled
             for(int i = 0; i < ORDER-1; i++){
                 n.key[i] = null;
@@ -562,4 +702,3 @@ public class BpTree <K extends Comparable <K>, V>
     } // main
 
 } // BpTree class
-
