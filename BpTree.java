@@ -83,7 +83,7 @@ public class BpTree <K extends Comparable <K>, V>
 
     /** The root of the B+Tree
      */
-    private final Node root;
+    private Node root;
 
     /** The counter for the number nodes accessed (for performance testing).
      */
@@ -362,10 +362,48 @@ public class BpTree <K extends Comparable <K>, V>
         out.println ("split not implemented yet");
         
         if(n == root){
-            Node new_root = new Node(false, n.parent);
-            root = new_root;
-            n.parent = new_root;
-            new_root.ref[0] = n;
+        	K[] _key = (K []) Array.newInstance (classK, ORDER);
+            V[] _ref = (V []) Array.newInstance (classV, ORDER+1);
+             int y=0;
+            for(int x=0;x<n.key.length+1;++x){
+               	/**
+               	 * Adds all Keys and their respective refs to array
+               	 * Maintains order as to determine which value will be promoted to 
+               	 * the new root node
+               	 */
+               	if(n.key[y-1].compareTo(key)<0 && n.key[y].compareTo(key)>0){
+               		_key[x] = key;
+               		_ref[x] = ref;
+               	}
+               	else{
+               		_key[x] = n.key[y];
+               		_ref[x] = (V) n.ref[y];
+               		if(y==4){
+               			_ref[x+1] = (V) n.ref[y+1];
+               			++x;
+               		}
+               		++y;
+               		
+               	}
+               	
+            }
+            
+            Node new_root = new Node(false,null);
+            Node new_lc = new Node(false, new_root);
+            new_root.key[0] = _key[2];
+            new_lc.key[0] = _key[0];
+            new_lc.key[1] = _key[1];
+            new_lc.ref[0] = _ref[0];
+            new_lc.ref[1] = _ref[1];
+            new_lc.ref[2] = _ref[2];
+            new_root.ref[0] = new_lc;
+            Node new_rc = new Node(false,null);
+            new_rc.key[0] = _key[3];
+            new_rc.key[1] = _key[4];
+            new_rc.ref[0] = _ref[3];
+            new_rc.ref[1] = _ref[4];
+            new_rc.ref[2] = _ref[5];
+            new_root.ref[1] = new_rc;
         }
         if(n.isLeaf){
             Node sibling = new Node(true, n.parent);
@@ -385,7 +423,7 @@ public class BpTree <K extends Comparable <K>, V>
             V[] _ref = (V []) Array.newInstance (classV, ORDER);
             
         
-            //-----------------\\
+             //-----------------\\
             // TO BE IMPLEMENTED \\
            //---------------------\\
         }
@@ -395,7 +433,7 @@ public class BpTree <K extends Comparable <K>, V>
             K[] _key = (K []) Array.newInstance (classK, ORDER);
             Node[] _ref = (Node[]) Array.newInstance (Node.class, ORDER+1);
             
-            //-----------------\\
+             //-----------------\\
             // TO BE IMPLEMENTED \\
            //---------------------\\
 
@@ -417,7 +455,7 @@ public class BpTree <K extends Comparable <K>, V>
                         _ref[ORDER].parent = sibling;
                     }
                     //out.println("Sibling - Key/Ref Pair");
-                    wedge(_key[i],_ref[i],sibling,0);
+                    wedge(_key[i],(V) _ref[i],sibling,0);
                     _ref[i].parent = sibling;
                 }
                 else{
@@ -427,7 +465,7 @@ public class BpTree <K extends Comparable <K>, V>
                     }
                     else{
                         //out.println("N Node - Key/Ref Pair");
-                        wedge(_key[i],_ref[i],n,0);
+                        wedge(_key[i], (V) _ref[i],n,0);
                     }
                 }
                 
@@ -441,11 +479,12 @@ public class BpTree <K extends Comparable <K>, V>
             }
             if(n.parent.nKeys == ORDER-1){//If parent is full
                 //out.println("Throwing " + _key[ORDER/2]);
-                return split(_key[ORDER/2],n,n.parent);//Split the parent
+                return split(_key[ORDER/2], (V) n,n.parent);//Split the parent
             }
             else{//Parent not full
                 //out.println("Throwing " + _key[ORDER/2]);
-                return wedge(_key[ORDER/2],n,n.parent,loc);//Insert to the parent 
+            	wedge(_key[ORDER/2], (V) n,n.parent,loc);//Insert to the parent 
+                return n.parent;
             }
         }
 
