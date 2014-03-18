@@ -397,23 +397,8 @@ public class BpTree <K extends Comparable <K>, V>
     private void insert (K key, V ref, Node n, Node p)
     {
     	if(n.isLeaf){//This node is a leaf node
-<<<<<<< HEAD
     		if (n.nKeys < ORDER - 1) {//Node is not full
     	        wedge (key, ref, n);
-=======
-    	    if (n.nKeys < ORDER - 1) {//Node is not full
-    	        wedge(key, ref, n);
-//    	    	for (int i = 0; i < n.nKeys; i++) {
-//    	        	K k_i = n.key [i];
-//    	        	if (key.compareTo (k_i) < 0) {
-//    	        		wedge (key, ref, n);
-//    	        	} else if (key.equals (k_i)) {
-//    	        		out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
-//    	        	} // if
-//
-//    	        } // for
-//    	        wedge (key, ref, n);
->>>>>>> FETCH_HEAD
     	        return;
     	    } 
     	    else {//Node is full
@@ -463,11 +448,7 @@ public class BpTree <K extends Comparable <K>, V>
     private void wedge (K key, V ref, Node n)
     {
     	  	
-<<<<<<< HEAD
         n.nKeys++;
-=======
-    	n.nKeys++;
->>>>>>> FETCH_HEAD
         for (int i = 0; i<n.nKeys; i++) {
             if(n.key[i] == null){
             	n.key [i] = key;
@@ -475,11 +456,7 @@ public class BpTree <K extends Comparable <K>, V>
                 break;
             }
         } // for
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> FETCH_HEAD
         
         K[] tempk = Arrays.copyOf(n.key, n.nKeys);
     	V[] tempv = (V[]) Arrays.copyOf(n.ref, n.nKeys);
@@ -489,11 +466,6 @@ public class BpTree <K extends Comparable <K>, V>
     	
     	n.key = Arrays.copyOf(tempk, ORDER-1);
     	n.ref = Arrays.copyOf(tempv, ORDER);  
-<<<<<<< HEAD
-=======
-    	System.out.println("wedge - inserted: "+ key);
-    	Arrays.toString(n.key);
->>>>>>> FETCH_HEAD
     	
 //        Arrays.sort(n.key);
 //        Arrays.sort(n.ref);
@@ -514,8 +486,7 @@ public class BpTree <K extends Comparable <K>, V>
         
         if(n == root){
             K[] _key = (K []) Array.newInstance (classK, ORDER);
-            V[] _ref = (V []) Array.newInstance (classV, ORDER+1);
-<<<<<<< HEAD
+            V[] _ref = (V []) Array.newInstance (classV, n.nKeys+1);
             for(int x=0;x<n.key.length;++x){
                	_key[x] = n.key[x];
             }
@@ -523,34 +494,9 @@ public class BpTree <K extends Comparable <K>, V>
             	_ref[z] = (V) n.ref[z];
             }
            	_key[4] = key;
-           	_ref[5] = ref;
+           	_ref[4] = ref;
            	Arrays.sort(_key);
            	Arrays.sort(_ref);
-=======
-            int y=0;
-            for(int x=0;x<n.key.length+1;++x){
-               	/**
-               	 * Adds all Keys and their respective refs to array
-               	 * Maintains order as to determine which value will be promoted to 
-               	 * the new root node
-               	 */
-               	if(n.key[y-1].compareTo(key)<0 && n.key[y].compareTo(key)>0){
-               		_key[x] = key;
-               		_ref[x] = ref;
-               	}
-               	else{
-               		_key[x] = n.key[y];
-                	_ref[x] = (V) n.ref[y];
-                	if(y==4){
-               			_ref[x+1] = (V) n.ref[y+1];
-               			++x;
-               		}
-               		++y;
-               		
-               	}
-            }
-           	
->>>>>>> FETCH_HEAD
            	Node new_root = new Node(false,null);
            	Node new_lc = new Node(false, new_root);
            	new_root.key[0] = _key[2];
@@ -738,22 +684,14 @@ public class BpTree <K extends Comparable <K>, V>
 //        if (args.length == 1) totKeys = Integer.valueOf (args [0]);
 //        for (int i = 1; i < totKeys; i += 2) bpt.put (i, i * i);
         bpt.put(5, 5);
-<<<<<<< HEAD
         System.out.println("ins 5");
         bpt.put(3, 3);
         System.out.println("ins 3");
-=======
-        bpt.put(2, 2);
->>>>>>> FETCH_HEAD
         bpt.put(7, 7);
         System.out.println("ins 7");
         bpt.put(1, 1);
-<<<<<<< HEAD
         System.out.println("ins 1");
         bpt.put(9,9);
-=======
-        bpt.put(6, 6);
->>>>>>> FETCH_HEAD
         bpt.print (bpt.root, 0);
         for (int i = 0; i < 9; i++) {
             out.println ("key = " + i + " value = " + bpt.get (i));
