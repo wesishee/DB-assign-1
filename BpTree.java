@@ -490,22 +490,13 @@ public class BpTree <K extends Comparable <K>, V>
                	 * Maintains order as to determine which value will be promoted to 
                	 * the new root node
                	 */
-               	if(n.key[y-1].compareTo(key)<0 && n.key[y].compareTo(key)>0){
-               		_key[x] = key;
-               		_ref[x] = ref;
-               	}
-               	else{
-               		_key[x] = n.key[y];
-                	_ref[x] = (V) n.ref[y];
-                	if(y==4){
-               			_ref[x+1] = (V) n.ref[y+1];
-               			++x;
-               		}
-               		++y;
-               		
-               	}
+               	_key[x] = n.key[x];
+               	_ref[x] = (V) n.ref[x];
             }
-           	
+           	_key[4] = key;
+           	_ref[4] = ref;
+           	Arrays.sort(_key);
+           	Arrays.sort(_ref);
            	Node new_root = new Node(false,null);
            	Node new_lc = new Node(false, new_root);
            	new_root.key[0] = _key[2];
