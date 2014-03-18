@@ -397,19 +397,11 @@ public class BpTree <K extends Comparable <K>, V>
     private void insert (K key, V ref, Node n, Node p)
     {
     	if(n.isLeaf){//This node is a leaf node
-    	    if (n.nKeys < ORDER - 1) {//Node is not full
-    	        for (int i = 0; i < n.nKeys; i++) {
-    	        	K k_i = n.key [i];
-    	        	if (key.compareTo (k_i) < 0) {
-    	        		wedge (key, ref, n);
-    	        	} else if (key.equals (k_i)) {
-    	        		out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
-    	        	} // if
-
-    	        } // for
+    		if (n.nKeys < ORDER - 1) {//Node is not full
     	        wedge (key, ref, n);
     	        return;
-    	    } else {//Node is full
+    	    } 
+    	    else {//Node is full
     	        split (key, ref, n);
     	        return;
     	    } // else  
@@ -456,7 +448,7 @@ public class BpTree <K extends Comparable <K>, V>
     private void wedge (K key, V ref, Node n)
     {
     	  	
-    	
+        n.nKeys++;
         for (int i = 0; i<n.nKeys; i++) {
             if(n.key[i] == null){
             	n.key [i] = key;
@@ -464,7 +456,7 @@ public class BpTree <K extends Comparable <K>, V>
                 break;
             }
         } // for
-        n.nKeys++;
+
         
         K[] tempk = Arrays.copyOf(n.key, n.nKeys);
     	V[] tempv = (V[]) Arrays.copyOf(n.ref, n.nKeys);
@@ -472,8 +464,8 @@ public class BpTree <K extends Comparable <K>, V>
     	Arrays.sort(tempk);
     	Arrays.sort(tempv);
     	
-    	n.key = Arrays.copyOf(tempk, ORDER);
-    	n.ref = Arrays.copyOf(tempv, ORDER+1);  
+    	n.key = Arrays.copyOf(tempk, ORDER-1);
+    	n.ref = Arrays.copyOf(tempv, ORDER);  
     	
 //        Arrays.sort(n.key);
 //        Arrays.sort(n.ref);
@@ -495,25 +487,21 @@ public class BpTree <K extends Comparable <K>, V>
         if(n == root){
             K[] _key = (K []) Array.newInstance (classK, ORDER);
             V[] _ref = (V []) Array.newInstance (classV, ORDER+1);
-            int y=0;
-            for(int x=0;x<n.key.length+1;++x){
-               	/**
-               	 * Adds all Keys and their respective refs to array
-               	 * Maintains order as to determine which value will be promoted to 
-               	 * the new root node
-               	 */
+            for(int x=0;x<n.key.length;++x){
                	_key[x] = n.key[x];
-               	_ref[x] = (V) n.ref[x];
+            }
+            for(int z=0;z<n.ref.length;++z){
+            	_ref[z] = (V) n.ref[z];
             }
            	_key[4] = key;
-           	_ref[4] = ref;
+           	_ref[5] = ref;
            	Arrays.sort(_key);
            	Arrays.sort(_ref);
            	Node new_root = new Node(false,null);
            	Node new_lc = new Node(false, new_root);
            	new_root.key[0] = _key[2];
            	Node new_rc = new Node(false,null);
-           	y=0;
+           	int y=0;
            	for(int x=0;x<ORDER;++x){
            		if(x<2){
            			new_lc.key[x] = _key[x];
@@ -696,11 +684,16 @@ public class BpTree <K extends Comparable <K>, V>
 //        if (args.length == 1) totKeys = Integer.valueOf (args [0]);
 //        for (int i = 1; i < totKeys; i += 2) bpt.put (i, i * i);
         bpt.put(5, 5);
+        System.out.println("ins 5");
         bpt.put(3, 3);
+        System.out.println("ins 3");
         bpt.put(7, 7);
+        System.out.println("ins 7");
         bpt.put(1, 1);
+        System.out.println("ins 1");
+        bpt.put(9,9);
         bpt.print (bpt.root, 0);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 9; i++) {
             out.println ("key = " + i + " value = " + bpt.get (i));
         } // for
         out.println ("-------------------------------------------");
