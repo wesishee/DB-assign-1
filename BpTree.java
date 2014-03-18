@@ -401,13 +401,13 @@ public class BpTree <K extends Comparable <K>, V>
     	        for (int i = 0; i < n.nKeys; i++) {
     	        	K k_i = n.key [i];
     	        	if (key.compareTo (k_i) < 0) {
-    	        		wedge (key, ref, n, i);
+    	        		wedge (key, ref, n);
     	        	} else if (key.equals (k_i)) {
     	        		out.println ("BpTree:insert: attempt to insert duplicate key = " + key);
     	        	} // if
 
     	        } // for
-    	        wedge (key, ref, n, n.nKeys);
+    	        wedge (key, ref, n);
     	        return;
     	    } else {//Node is full
     	        split (key, ref, n);
@@ -453,15 +453,18 @@ public class BpTree <K extends Comparable <K>, V>
      * @param n    the current node
      * @param i    the insertion position within node n
      */
-    private void wedge (K key, V ref, Node n, int i)
+    private void wedge (K key, V ref, Node n)
     {
-        for (int j = n.nKeys; j > i; j--) {
-            n.key [j] = n.key [j - 1];
-            n.ref [j] = n.ref [j - 1];
+        for (int i = 0; i<n.nKeys; i++) {
+            if(n.key[i] == null){
+            	n.key [i] = key;
+                n.ref [i] = ref;
+                break;
+            }
         } // for
-        n.key [i] = key;
-        n.ref [i] = ref;
         n.nKeys++;
+        Arrays.sort(n.key);
+        Arrays.sort(n.ref);
         
     } // wedge
 
@@ -475,7 +478,7 @@ public class BpTree <K extends Comparable <K>, V>
      */
     private Node split (K key, V ref, Node n)
     {
-        out.println ("split not implemented yet");
+        //out.println ("split not implemented yet");
         
         if(n == root){
             K[] _key = (K []) Array.newInstance (classK, ORDER);
@@ -501,8 +504,7 @@ public class BpTree <K extends Comparable <K>, V>
                		++y;
                		
                	}
-               	
-               }
+            }
            	
            	Node new_root = new Node(false,null);
            	Node new_lc = new Node(false, new_root);
@@ -563,7 +565,7 @@ public class BpTree <K extends Comparable <K>, V>
     		}else{ // parent is NOT full
     			for(int i=0; i<n.parent.nKeys-1; i++){ // iterate through parent and find where keySplit and refSplit should go
     				if(tempKeys[0].compareTo(n.parent.key[i]) < 0){
-    					wedge(keySplit, (V) sibling, n.parent, i);
+    					wedge(keySplit, (V) sibling, n.parent);
     				}
     			}
     		}
@@ -591,9 +593,6 @@ public class BpTree <K extends Comparable <K>, V>
 //            V[] _ref = (V []) Array.newInstance (classV, ORDER);
             
         
-             //-----------------\\
-            // TO BE IMPLEMENTED \\
-           //---------------------\\
         }        
         else{//Splitting an internal node
             Node sibling = new Node(false,n.parent);
@@ -645,7 +644,7 @@ public class BpTree <K extends Comparable <K>, V>
                         _ref[ORDER].parent = sibling;
                     }
                     //out.println("Sibling - Key/Ref Pair");
-                    wedge(_key[i],(V) _ref[i],sibling,0);
+                    wedge(_key[i],(V) _ref[i],sibling);
                     _ref[i].parent = sibling;
                 }
                 else{
@@ -655,7 +654,7 @@ public class BpTree <K extends Comparable <K>, V>
                     }
                     else{
                         //out.println("N Node - Key/Ref Pair");
-                        wedge(_key[i], (V) _ref[i],n,0);
+                        wedge(_key[i], (V) _ref[i],n);
                     }
                 }
                 
@@ -673,7 +672,7 @@ public class BpTree <K extends Comparable <K>, V>
             }
             else{//Parent not full
                 //out.println("Throwing " + _key[ORDER/2]);
-            	wedge(_key[ORDER/2], (V) n,n.parent,loc);//Insert to the parent 
+            	wedge(_key[ORDER/2], (V) n,n.parent);//Insert to the parent 
                 return n.parent;
             }
         }
@@ -690,15 +689,19 @@ public class BpTree <K extends Comparable <K>, V>
     public static void main (String [] args)
     {
         BpTree <Integer, Integer> bpt = new BpTree <> (Integer.class, Integer.class);
-        int totKeys = 10;
-        if (args.length == 1) totKeys = Integer.valueOf (args [0]);
-        for (int i = 1; i < totKeys; i += 2) bpt.put (i, i * i);
+//        int totKeys = 10;
+//        if (args.length == 1) totKeys = Integer.valueOf (args [0]);
+//        for (int i = 1; i < totKeys; i += 2) bpt.put (i, i * i);
+        bpt.put(5, 5);
+        bpt.put(3, 3);
+        bpt.put(7, 7);
+        bpt.put(1, 1);
         bpt.print (bpt.root, 0);
-        for (int i = 0; i < totKeys; i++) {
+        for (int i = 0; i < 4; i++) {
             out.println ("key = " + i + " value = " + bpt.get (i));
         } // for
         out.println ("-------------------------------------------");
-        out.println ("Average number of nodes accessed = " + bpt.count / (double) totKeys);
+//        out.println ("Average number of nodes accessed = " + bpt.count / (double) totKeys);
     } // main
 
 } // BpTree class
