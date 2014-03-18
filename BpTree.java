@@ -455,6 +455,8 @@ public class BpTree <K extends Comparable <K>, V>
      */
     private void wedge (K key, V ref, Node n)
     {
+    	  	
+    	
         for (int i = 0; i<n.nKeys; i++) {
             if(n.key[i] == null){
             	n.key [i] = key;
@@ -463,8 +465,18 @@ public class BpTree <K extends Comparable <K>, V>
             }
         } // for
         n.nKeys++;
-        Arrays.sort(n.key);
-        Arrays.sort(n.ref);
+        
+        K[] tempk = Arrays.copyOf(n.key, n.nKeys);
+    	V[] tempv = (V[]) Arrays.copyOf(n.ref, n.nKeys);
+    	
+    	Arrays.sort(tempk);
+    	Arrays.sort(tempv);
+    	
+    	n.key = Arrays.copyOf(tempk, ORDER);
+    	n.ref = Arrays.copyOf(tempv, ORDER+1);  
+    	
+//        Arrays.sort(n.key);
+//        Arrays.sort(n.ref);
         
     } // wedge
 
