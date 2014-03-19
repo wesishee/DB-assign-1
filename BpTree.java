@@ -480,32 +480,32 @@ public class BpTree <K extends Comparable <K>, V>
      * @author Chris Klappich
      * @author Wes Ishee
      */
-    private Node split (K key, V ref, Node n)
+private Node split (K key, V ref, Node n)
     {
         //out.println ("split not implemented yet");
         
         if(n == root){
             K[] _key = (K []) Array.newInstance (classK, ORDER);
-            V[] _ref = (V []) Array.newInstance (classV, n.nKeys+1);
+            V [] _ref = (V []) Array.newInstance (classV, n.nKeys+1);
             for(int x=0;x<n.key.length;++x){
                	_key[x] = n.key[x];
             }
             for(int z=0;z<n.ref.length;++z){
             	_ref[z] = (V) n.ref[z];
             }
-           	_key[4] = key;
-           	_ref[4] = ref;
+           	_key[ORDER-1] = key;
+           	_ref[n.nKeys] = ref;
            	Arrays.sort(_key);
            	Arrays.sort(_ref);
            	Node new_root = new Node(false,null);
-           	Node new_lc = new Node(false, new_root);
-           	new_root.key[0] = _key[2];
-           	Node new_rc = new Node(false,null);
+           	Node new_lc = new Node(true, new_root);
+           	new_root.key[0] = _key[(int) Math.floor(ORDER/2)];
+           	Node new_rc = new Node(true,null);
            	int y=0;
            	for(int x=0;x<ORDER;++x){
            		if(x<2){
            			new_lc.key[x] = _key[x];
-            		new_lc.ref[x] = _ref[x];
+            		new_lc.ref[x] = (V) _ref[x];
             	}
            		else{
            			new_rc.key[y] = _key[x];
@@ -594,7 +594,6 @@ public class BpTree <K extends Comparable <K>, V>
              //-----------------\\
             // TO BE IMPLEMENTED \\
            //---------------------\\
-
             int y=0;
             for(int x=0;x<n.key.length+1;++x){
                	/**
@@ -667,9 +666,6 @@ public class BpTree <K extends Comparable <K>, V>
                 return n.parent;
             }
         }
-
-
-
         return null;
     } // split
 
